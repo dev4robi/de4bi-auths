@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration scan="true" scanPeriod="1 minutes">
+	<include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+	<property value="./log/ghasix" name="LOG_FILE_PREFIX"/>
+	<!-- 콘솔 로그 -->
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<charset>UTF-8</charset>
+			<!-- [yyyy-MM-dd HH:mm:ss] [Level] [Thread] [tId] [File/Line/Method] - [Layer] [Msg]> -->
+			<pattern>[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%t] [%X{tId}] [%F\(%line\).%M\(\)] --- [%X{layer}] %msg%n</pattern>
+		</encoder>
+	</appender>
+	<!-- 파일 로그 -->
+	<!--<appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="FILE">
+		<encoder>
+			<charset>UTF-8</charset>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} ${LOG_LEVEL_PATTERN:-%5p}\(${PID:- }\)[%t] [%logger{30}:%line] %msg%n</pattern>
+		</encoder>
+		<file>${LOG_FILE_PREFIX}.log</file>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>${LOG_FILE_PREFIX}.%d{yyyyMMdd}.log</fileNamePattern>
+		</rollingPolicy>
+	</appender>
+	<springProfile name="local">
+		<logger name="net.donnert.spring.boot" level="DEBUG" />
+		<root level="INFO">
+			<appender-ref ref="CONSOLE"/>
+		</root>	
+	</springProfile>-->
+	<springProfile name="!local">
+		<logger name="net.donnert.spring.boot" level="DEBUG" />
+		<root level="INFO">
+			<appender-ref ref="CONSOLE"/>
+			<!-- <appender-ref ref="FILE"/> -->
+		</root>	
+	</springProfile>
+</configuration>
