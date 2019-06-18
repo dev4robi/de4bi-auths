@@ -11,8 +11,14 @@ public class MainController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    @RequestMapping("/")
+    @RequestMapping("/main")
     public ModelAndView main() {
+        
         return new ModelAndView("main");
+    }
+
+    @RequestMapping("/register")
+    public ModelAndView registerGoogle() {
+        return new ModelAndView("register");
     }
 }
