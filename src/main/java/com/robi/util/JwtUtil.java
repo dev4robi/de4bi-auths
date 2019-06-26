@@ -93,11 +93,6 @@ public class JwtUtil {
                 return null;
             }
             
-            if (signKey == null) {
-                logger.error("'signKey' is null!");
-                return null;
-            }
-            
             // JWT 파싱 시작
             JwtParser jwtParser = Jwts.parser();
             
@@ -108,8 +103,10 @@ public class JwtUtil {
                 }
             }
             
-            // 서명 검사
-            jwtParser = jwtParser.setSigningKey(signKey);
+            // 서명키 등록
+            if (signKey != null) {
+                jwtParser = jwtParser.setSigningKey(signKey);
+            }
             
             // Claims 추출
             Jws<Claims> jws = jwtParser.parseClaimsJws(jwtStr);

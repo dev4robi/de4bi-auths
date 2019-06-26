@@ -1,17 +1,24 @@
 package com.robi.util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +27,8 @@ public class HttpUtil {
     private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
     private static final ResponseHandler<String> BASIC_RESPONSE_HANDLER = new BasicResponseHandler();
 
-    public static int httpGet(String reqUrl, Map<String, Object> reqHeader,
+    public static int httpGet(String reqUrl,
+                              Map<String, String> reqHeader,
                               Map<String, String> resHeader, String[] resBody) {
         if (reqUrl == null || reqUrl.length() == 0) {
             logger.error("'reqUrl' is null or zero length! (reqUrl:" + reqUrl + ")");
@@ -59,25 +67,24 @@ public class HttpUtil {
         
         int statusCode = response.getStatusLine().getStatusCode();
 
-        if (statusCode == HttpStatus.SC_OK) {
-            try {
-                if (resBody != null && resBody.length > 0) {
-                    resBody[0] = BASIC_RESPONSE_HANDLER.handleResponse(response);
-                }
-            }
-            catch (NullPointerException | IOException | UnsupportedOperationException e) {
-                logger.error("Exception!", e);
-                return HttpStatus.SC_INTERNAL_SERVER_ERROR;
+        try {
+            if (resBody != null && resBody.length > 0) {
+                resBody[0] = BASIC_RESPONSE_HANDLER.handleResponse(response);
             }
         }
-        else {
-            logger.error("Response status not 200(OK)! (reqUrl:" + reqUrl + ")");
+        catch (NullPointerException | IOException | UnsupportedOperationException e) {
+            logger.error("Exception!", e);
+            return HttpStatus.SC_INTERNAL_SERVER_ERROR;
         }
 
         return statusCode;
     }
 
-    public static int httpPost(String reqUrl, Map<String, Object> reqHeader, String reqBody,
+    /**
+     *  - Reference: https://www.baeldung.com/httpclient-post-http-request
+     */
+    public static int httpPost(String reqUrl,
+                               Map<String, String> reqHeader, Map<String, String> reqBody,
                                Map<String, String> resHeader, String[] resBody) {
         if (reqUrl == null || reqUrl.length() == 0) {
             logger.error("'reqUrl' is null or zero length! (reqUrl:" + reqUrl + ")");
@@ -96,7 +103,21 @@ public class HttpUtil {
             }
         }
 
-        // https://www.baeldung.com/httpclient-post-http-request 이거 참고해서 post 만들기부터 시작...! @@
+        if (reqBody != null) {
+            try {
+                List<NameValuePair> params = new LinkedList<NameValuePair>();
+
+                for (String key : reqBody.keySet()) {
+                    params.add(new BasicNameValuePair(key, reqBody.get(key)));
+                }
+
+                postReq.setEntity(new UrlEncodedFormEntity(params));
+            }
+            catch (UnsupportedEncodingException e) {
+                logger.error("Exception!", e);
+                return -1;
+            }
+        }
 
         HttpResponse response = null;
 
@@ -118,19 +139,14 @@ public class HttpUtil {
         
         int statusCode = response.getStatusLine().getStatusCode();
 
-        if (statusCode == HttpStatus.SC_OK) {
-            try {
-                if (resBody != null && resBody.length > 0) {
-                    resBody[0] = BASIC_RESPONSE_HANDLER.handleResponse(response);
-                }
-            }
-            catch (NullPointerException | IOException | UnsupportedOperationException e) {
-                logger.error("Exception!", e);
-                return HttpStatus.SC_INTERNAL_SERVER_ERROR;
+        try {
+            if (resBody != null && resBody.length > 0) {
+                resBody[0] = BASIC_RESPONSE_HANDLER.handleResponse(response);
             }
         }
-        else {
-            logger.error("Response status not 200(OK)! (reqUrl:" + reqUrl + ")");
+        catch (NullPointerException | IOException | UnsupportedOperationException e) {
+            logger.error("Exception!", e);
+            return HttpStatus.SC_INTERNAL_SERVER_ERROR;
         }
 
         return statusCode;

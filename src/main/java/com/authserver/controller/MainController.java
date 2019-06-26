@@ -3,6 +3,7 @@ package com.authserver.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.robi.oauth.GoogleOAuth;
 import com.robi.util.HttpUtil;
 
 import org.slf4j.Logger;
@@ -19,8 +20,13 @@ public class MainController {
     @RequestMapping("/main")
     public ModelAndView main() {
         Map<String, String> obj = new HashMap<String, String>();
-        HttpUtil.httpGet("https://naver.com", null, null, null);
-        obj.put("googleLoginUrl", "https://naver.com");
+        
+        GoogleOAuth oauth = new GoogleOAuth();
+        String oauthUrl = oauth.makeUrlForCode("497284575180-0ottstk5ehodlic3siv6srf4usietg9v.apps.googleusercontent.com",
+                                               "code", "email profile", "nonce123", "http://localhost:50000/oauth/google/code2token",
+                                               "state123", "select_account", "wap", "loginHint", "offline", false, null, "*");
+
+        obj.put("googleLoginUrl", oauthUrl);
         return new ModelAndView("main", obj);
     }
 
