@@ -2,6 +2,7 @@ package com.authserver.controller;
 
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
 
 import com.robi.oauth.GoogleOAuth;
@@ -24,14 +25,16 @@ public class OAuthRestController {
             return null;
         }
 
-        Map<String, Object> rtMap = null;
+        Map<String, Object> rtMap = new HashMap<String, Object>();
+        String str = null;
         GoogleOAuth oauth = new GoogleOAuth();
-        if ((rtMap = oauth.getIdToken(code, "497284575180-0ottstk5ehodlic3siv6srf4usietg9v.apps.googleusercontent.com", 
+        if ((str = oauth.getIdToken(code, "497284575180-0ottstk5ehodlic3siv6srf4usietg9v.apps.googleusercontent.com", 
                                       "ZNVLQPGYA7_stIy6c0LvFb2s", "http://localhost:50000/oauth/google/code2token", 
                                       "authorization_code")) == null) {
             return null;
         }
 
+        rtMap.put("rt", str);
         return rtMap;
     }
 }
