@@ -25,7 +25,6 @@ public class OAuthRestController {
             return null;
         }
 
-        Map<String, Object> rtMap = new HashMap<String, Object>();
         String str = null;
         GoogleOAuth oauth = new GoogleOAuth();
         if ((str = oauth.getIdToken(code, "497284575180-0ottstk5ehodlic3siv6srf4usietg9v.apps.googleusercontent.com", 
@@ -34,7 +33,6 @@ public class OAuthRestController {
             return null;
         }
 
-        rtMap.put("rt", str);
-        return rtMap;
+        return oauth.verifyAndParseIdTokenJwt(str);
     }
 }
