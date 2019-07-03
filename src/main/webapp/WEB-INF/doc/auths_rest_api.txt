@@ -28,14 +28,48 @@
 +------------------------------------------------------------------------------------------------+
 | > Category : Users API                                                                         |
 +------------------------------------------------------------------------------------------------+
-| Access    : Public                                                                             |
-| Service   : 구글로 회원 가입                                                                   |
-| URL       : /register/google                                                                   |
+| Access    : Private                                                                            |
+| Service   : 회원정보 조회                                                                      |
+| URL       : /users/{id}|{email}|{nickName}                                                     |
 | Method    : GET                                                                                |
-| ReqHeader :                                                                                    |
+| ReqHeader : {"userJwt(R)"}                                                                     |
 | ReqBody   :                                                                                    |
 | ResHeader :                                                                                    |
-| ResBody   :                                                                                    |
+| ResBody   : {"email(R)","nickName(R)","fullName(R)","gender(R)","dateOfBirth(R)"}              |                                                                            |
+| Comment   :                                                                                    |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Public                                                                             |
+| Service   : 회원 가입                                                                          |
+| URL       : /users                                                                             |
+| Method    : POST                                                                               |
+| ReqHeader :                                                                                    |
+| ReqBody   : {"email(R)","password(R)","nickname(R)",                                           |
+|              "fullName(R)","gender(R)","dateOfBirth(R)"}                                       |
+| ResHeader :                                                                                    |
+| ResBody   : Default                                                                            |
+| Comment   :                                                                                    |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Public                                                                             |
+| Service   : 회원정보 수정                                                                      |
+| URL       : /users                                                                             |
+| Method    : PUT                                                                                |
+| ReqHeader : {"userJwt(R)"}                                                                     |
+| ReqBody   : {"fullName","gender","dateOfBirth"}                                                |
+| ResHeader :                                                                                    |
+| ResBody   : Default                                                                            |
+| Comment   :                                                                                    |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Public                                                                             |
+| Service   : 회원정보 삭제                                                                      |
+| URL       : /users                                                                             |
+| Method    : DELETE                                                                             |
+| ReqHeader : {"userJwt(R)"}                                                                     |
+| ReqBody   :                                                                                    |
+| ResHeader :                                                                                    |
+| ResBody   : Default                                                                            |
 | Comment   :                                                                                    |
 |                                                                                                |
 +------------------------------------------------------------------------------------------------+

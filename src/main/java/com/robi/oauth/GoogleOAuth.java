@@ -1,21 +1,15 @@
 package com.robi.oauth;
 
-import java.io.ByteArrayInputStream;
 import java.math.BigInteger;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
+
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.xml.bind.DatatypeConverter;
 
 import com.robi.util.HttpUtil;
 import com.robi.util.JwtUtil;
@@ -27,12 +21,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-
+@Component
 public class GoogleOAuth {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());

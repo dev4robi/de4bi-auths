@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <html>
 <head>
 	<!-- Meta -->
@@ -63,15 +64,36 @@
 		<div class="col-md-10 text-center align-self-center">
 			<!-- Reference - https://developers.google.com/identity/protocols/OAuth2WebServer -->
 			<input type="hidden" id="googleLoginUrl" value="${googleLoginUrl}">
-			<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin">Google</button>
+			<c:choose>
+				<c:when test="${not empty googleLoginUrl}">
+					<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin" >Google</button>
+				</c:when>
+				<c:otherwise>
+					<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin" disabled>Google (Comming soon)</button>
+				</c:otherwise>
+			</c:choose>
 		</div>
 		<div class="col-md-10 text-center align-self-center">
 			<input type="hidden" id="kakaoLoginUrl" value="">
-			<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin">Kakao</button>
+			<c:choose>
+				<c:when test="${not empty kakaoLoginUrl}">
+					<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin">Kakao</button>
+				</c:when>
+				<c:otherwise>
+					<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin" disabled>Kakao (Comming soon)</button>
+				</c:otherwise>
+			</c:choose>
 		</div>
 		<div class="col-md-10 text-center align-self-center">
 			<input type="hidden" id="naverLoginUrl" value="">
-			<button type="button" class="btn btn-success w-100" id="btnNaverLogin">Naver</button>
+			<c:choose>
+				<c:when test="${not empty naverLoginUrl}">
+					<button type="button" class="btn btn-success w-100" id="btnNaverLogin">Naver</button>
+				</c:when>
+				<c:otherwise>
+					<button type="button" class="btn btn-success w-100" id="btnNaverLogin" disabled>Naver (Comming soon)</button>
+				</c:otherwise>
+			</c:choose>
 		</div>
 	</div>
 </body>

@@ -10,8 +10,10 @@ USE db_auths_test;
 CREATE TABLE `db_auths_test`.`users` (
   `id`              BIGINT NOT NULL AUTO_INCREMENT, -- 고유 ID
   `email`           VARCHAR(128) NOT NULL,          -- 고유 메일주소 (RFC 2822에 따르면 320자까지 가능하지만 utf8mb4체어셋 한계로 크기 제한)
-  `password`        VARCHAR(64) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
-  `name`            VARCHAR(64) NOT NULL,           -- 이름
+  `password`        VARCHAR(32) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
+  `nickname`        VARCHAR(16) NOT NULL,           -- 별명(닉네임)
+  `full_name`       VARCHAR(64) NOT NULL,           -- 이름
+  `date_of_birth`   BIGINT NOT NULL,                -- 생년월일(UTC-1970-ms)
   `access_level`    INT NOT NULL DEFAULT '1',       -- 회원등급
   `status`          INT NOT NULL,                   -- 계정상태 (탈퇴,일반,휴면)
   `join_time`       BIGINT NOT NULL,                -- 가입일자 (재가입시 갱신)
@@ -19,8 +21,9 @@ CREATE TABLE `db_auths_test`.`users` (
   `accessible_time` BIGINT,                         -- 서비스 접근가능 시점의 시간
 
   PRIMARY KEY (`id`),
-  UNIQUE INDEX `users_uk_idx_email` (`email` ASC)
+  UNIQUE KEY (`email`, `nickname`),
+  UNIQUE INDEX `users_uk_idx_email` (`email` ASC),
+  UNIQUE INDEX `users_uk_idx_nickname` (`nickname` ASC)
 );
 
 -- 테스트용 관리자 계정
-INSERT INTO users(email,name,access_level,status,join_time,last_login_time,accessible_time) VALUES("robi9202@gmail.com","이태훈",10000,0,1557230600000,0,0);
