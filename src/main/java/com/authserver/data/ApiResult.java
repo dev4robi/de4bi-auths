@@ -23,15 +23,15 @@ public class ApiResult {
         this.data = data;
     }
 
-    public ApiResult make(boolean result) {
+    public static ApiResult make(boolean result) {
         return make(result, DEFAULT_MESSAGE_OK, null);
     }
 
-    public ApiResult make(boolean result, String message) {
+    public static ApiResult make(boolean result, String message) {
         return make(result, message, null);
     }
 
-    public ApiResult make(boolean result, String message, Map<String, Object> data) {
+    public static ApiResult make(boolean result, String message, Map<String, Object> data) {
         return new ApiResult(result, message, data);
     }
 

@@ -13,6 +13,7 @@ CREATE TABLE `db_auths_test`.`users` (
   `password`        VARCHAR(32) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
   `nickname`        VARCHAR(16) NOT NULL,           -- 별명(닉네임)
   `full_name`       VARCHAR(64) NOT NULL,           -- 이름
+  `gender`          CHAR(1) NOT NULL,               -- 성별
   `date_of_birth`   BIGINT NOT NULL,                -- 생년월일(UTC-1970-ms)
   `access_level`    INT NOT NULL DEFAULT '1',       -- 회원등급
   `status`          INT NOT NULL,                   -- 계정상태 (탈퇴,일반,휴면)
