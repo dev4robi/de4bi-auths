@@ -14,6 +14,7 @@ import com.authserver.data.jpa.converter.UsersStatusConverter;
 import com.authserver.data.jpa.enums.UsersStatus;
 
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -63,4 +64,21 @@ public class Users {
 
     @Column(name = "accessible_time")
     private Long accessibleTime;
+
+    @Builder(toBuilder = true)
+    public Users(String email, String password, String nickname, String fullName,
+                 Character gender, Long dateOfBirth, Integer accessLevel, UsersStatus status,
+                 Long joinTime, Long lastLoginTime, Long accessibleTime) {
+        this.email = email;
+        this.password = password;
+        this.nickname = nickname;
+        this.fullName = fullName;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+        this.accessLevel = accessLevel;
+        this.status = status;
+        this.joinTime = joinTime;
+        this.lastLoginTime = lastLoginTime;
+        this.accessibleTime = accessibleTime;
+    }
 }

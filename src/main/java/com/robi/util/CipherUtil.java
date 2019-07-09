@@ -2,6 +2,7 @@ package com.robi.util;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 
@@ -19,7 +20,10 @@ public class CipherUtil {
     // [Class public constants]
     // CipherType
     public static final int AES_CBC_PKCS5 = 0;
-    // ...
+    // HashingType
+    public static final int MD5 = 0;
+    public static final int SHA256 = 1;
+    private static final String[] HASHING_ALGORITHMS = { "MD5", "SHA-256" };
     
     // [Class private constants]
     private static final Logger logger = LoggerFactory.getLogger(CipherUtil.class);
@@ -109,6 +113,53 @@ public class CipherUtil {
         }
         
         return plainBytes;
+    }
+
+    /**
+     * <p>입력된 바이트 배열을 해싱하여 반환합니다.</p>
+     * @param hashingType : 해시 알고리즘
+     * <pre>
+     * - MD5 : MD5 알고리즘 (32byte output)
+     * - SHA256 : SHA256 알고리즘 (64byte output)</pre>
+     * @param originBytes : 원본 데이터 바이트 배열.
+     * @param saltBytes : SALTING을 위한 바이트 배열.
+     * @return 해싱된 바이트 배열.
+     */
+    public static byte[] hashing(int hashingType, byte[] originBytes, byte[] saltBytes) {
+        // 파라미터 검사
+        if (hashingType != MD5 && hashingType != SHA256) {
+            logger.error("Undefined 'hashingType'! (hashingType:" + hashingType + ")");
+            return null;
+        }
+
+        if (originBytes == null || originBytes.length == 0) {
+            logger.error("'originBytes' is null or zero length! (originBytes:" + originBytes + ")");
+            return null;
+        }
+
+        // SALTING
+        byte[] hashingTargetBytes = originBytes;
+
+        if (saltBytes != null && saltBytes.length > 0) {
+            byte[] saltedOriginBytes = new byte[originBytes.length + saltBytes.length];
+            System.arraycopy(originBytes, 0, saltedOriginBytes, 0, originBytes.length);
+            System.arraycopy(saltBytes, 0, saltedOriginBytes, originBytes.length, saltBytes.length);
+            hashingTargetBytes = saltedOriginBytes;
+        }
+
+        // 해싱 수행
+        byte[] hashingResultBytes = null;
+
+        try {
+            MessageDigest md = MessageDigest.getInstance(HASHING_ALGORITHMS[hashingType]);
+            md.update(hashingTargetBytes);
+            hashingResultBytes = md.digest();
+        }
+        catch (NoSuchAlgorithmException | ArrayIndexOutOfBoundsException e) {
+            logger.error("Exception!", e);
+        }
+
+        return hashingResultBytes;
     }
     
     // AES 암복호화 수행

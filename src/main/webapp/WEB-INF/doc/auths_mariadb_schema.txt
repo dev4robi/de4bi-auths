@@ -10,7 +10,7 @@ USE db_auths_test;
 CREATE TABLE `db_auths_test`.`users` (
   `id`              BIGINT NOT NULL AUTO_INCREMENT, -- 고유 ID
   `email`           VARCHAR(128) NOT NULL,          -- 고유 메일주소 (RFC 2822에 따르면 320자까지 가능하지만 utf8mb4체어셋 한계로 크기 제한)
-  `password`        VARCHAR(32) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
+  `password`        VARCHAR(64) NOT NULL,           -- 비밀번호 (SALTED + SHA-256)
   `nickname`        VARCHAR(16) NOT NULL,           -- 별명(닉네임)
   `full_name`       VARCHAR(64) NOT NULL,           -- 이름
   `gender`          CHAR(1) NOT NULL,               -- 성별

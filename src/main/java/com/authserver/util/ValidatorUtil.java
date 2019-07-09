@@ -112,7 +112,7 @@ public class ValidatorUtil {
 
         char genderCh = gender.charAt(0);
 
-        if (genderCh != 'M' || genderCh != 'F') { // male or female
+        if (genderCh != 'M' && genderCh != 'F') { // male or female
             logger.error("'genderCh' is NOT 'M' or 'F'! (gender:" + gender + ")");
             return ApiResult.make(false, "성별값이 올바르지 않습니다.");
         }
