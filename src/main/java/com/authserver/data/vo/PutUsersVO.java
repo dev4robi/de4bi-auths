@@ -1,14 +1,15 @@
 package com.authserver.data.vo;
 
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
-public class PostUsersVO {
+@ToString
+public class PutUsersVO {
 
-    private String email;
+    private String userJwt;
     private String password;
     private String nickname;
     private String fullName;

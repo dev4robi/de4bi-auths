@@ -3,6 +3,7 @@ package com.authserver.controller;
 import java.util.Map;
 
 import com.authserver.data.vo.PostUsersVO;
+import com.authserver.data.vo.PutUsersVO;
 import com.authserver.service.UsersService;
 
 import org.slf4j.Logger;
@@ -30,18 +31,14 @@ public class UsersRestController {
 
     @PostMapping
     public Map<String, Object> postUsers(@RequestBody PostUsersVO postUsersVO) {
-        logger.info("email: " + postUsersVO.getEmail() + ", password: " + postUsersVO.getPassword() +
-                    ", nickname: " + postUsersVO.getNickname() + ", fullName" + postUsersVO.getFullName() +
-                    ", gender: " + postUsersVO.getGender() + ", dateOfBirth: " + postUsersVO.getDateOfBirth());
         return usersSvc.insertUser(postUsersVO.getEmail(), postUsersVO.getPassword(), postUsersVO.getNickname(),
-                                   postUsersVO.getFullName(), postUsersVO.getGender(), postUsersVO.getDateOfBirth()
-                                  ).toMap();
+                                   postUsersVO.getFullName(), postUsersVO.getGender(), postUsersVO.getDateOfBirth()).toMap();
     }
 
     @PutMapping
-    public Map<String, Object> putUsers() {
-        // 회원정보 수정부터 시작 @@
-        return null;
+    public Map<String, Object> putUsers(@RequestBody PutUsersVO putUsersVO) {
+        return usersSvc.updateUser(putUsersVO.getUserJwt(), putUsersVO.getPassword(), putUsersVO.getNickname(),
+                                   putUsersVO.getFullName(), putUsersVO.getGender(), putUsersVO.getDateOfBirth()).toMap();
     }
 
     @DeleteMapping

@@ -51,6 +51,14 @@ public class ApiResult {
         return this.data;
     }
 
+    public Object getData(String key) {
+        if (this.data == null) {
+            return null;
+        }
+
+        return this.data.get(key);
+    }
+
     public void addData(String key, Object value) {
         if (this.data == null) {
             this.data = new HashMap<String, Object>();

@@ -26,8 +26,35 @@ public class UsersService {
     private UsersRepository usersRepo;
     private Environment env;
 
+    public ApiResult selectUserByEmail(String email) {
+        // Param check
+        ApiResult paramValidationRst = null;
+
+        if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+            return paramValidationRst;
+        }
+
+        // JPA - select from users
+        Users selectedUser = null;
+
+        try {
+            selectedUser = usersRepo.findByEmail(email);
+
+            if (selectedUser == null) {
+                logger.error("'selectedUser' is null!");
+                throw new Exception();
+            }
+        }
+        catch (Exception e) {
+            logger.error("JPA Exception!", e);
+            return ApiResult.make(false, "회원정보 DB조회중 오류가 발생했습니다.");
+        }
+
+        return ApiResult.make(true, null, MapUtil.toMap("selectedUser", selectedUser));
+    }
+
     public ApiResult insertUser(String email, String password, String nickname,
-                                String fullName, String gender, long dateOfBirth) {
+                                String fullName, String gender, Long dateOfBirth) {
         // Param check
         ApiResult paramValidationRst = null;
 
@@ -51,6 +78,10 @@ public class UsersService {
             return paramValidationRst;
         }
 
+        if (!(paramValidationRst = ValidatorUtil.arthimatic("dateOfBirth", dateOfBirth, 0L, Long.MAX_VALUE)).getResult()) {
+            return paramValidationRst;
+        }
+
         // Password salting and hashing
         ApiResult hashingPasswordRst = hashingPassword(password);
 
@@ -59,21 +90,16 @@ public class UsersService {
             return hashingPasswordRst;
         }
 
-        password = hashingPasswordRst.getData().get("password").toString();
+        password = (String) hashingPasswordRst.getData("password");
 
         // JPA - insert into users
         try {
             Long curTime = System.currentTimeMillis();
-            Users insertedUser = Users.builder().email(email)
-                                                .password(password)
-                                                .nickname(nickname)
-                                                .fullName(fullName)
-                                                .gender(gender.charAt(0))
-                                                .dateOfBirth(dateOfBirth)
-                                                .accessLevel(0)
-                                                .status(UsersStatus.NORMAL)
-                                                .joinTime(curTime)
-                                                .lastLoginTime(0L)
+            Users insertedUser = Users.builder().email(email).password(password)
+                                                .nickname(nickname).fullName(fullName)
+                                                .gender(gender.charAt(0)).dateOfBirth(dateOfBirth)
+                                                .accessLevel(0).status(UsersStatus.NORMAL)
+                                                .joinTime(curTime).lastLoginTime(0L)
                                                 .accessibleTime(curTime)
                                                 .build();
 
@@ -85,8 +111,89 @@ public class UsersService {
             logger.info("JPA - insert success! (insertedUser:" + insertedUser.toString() + ")");
         }
         catch (Exception e) {
-            logger.error("Exception!", e);
+            logger.error("JPA Exception!", e);
             return ApiResult.make(false, "회원정보 DB추가중 오류가 발생했습니다.");
+        }
+
+        return ApiResult.make(true);
+    }
+
+    public ApiResult updateUser(String userJwt, String password, String nickname,
+                                String fullName, String gender, Long dateOfBirth) {
+        String email = "robi9202@gmail.com"; // @@ jwt분석구문 추후 추가!!
+        // @@ 업데이트 시 Duplicate entry 'robi9202@gmail.com' for key 'users_uk_idx_email'
+        // @@ 오류 발생하는것부터 해결...! 인덱스 중복...
+
+        // Param check
+        ApiResult paramValidationRst = null;
+
+        if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+            return paramValidationRst;
+        }
+
+        if (!(paramValidationRst = ValidatorUtil.strLen("password", password, 8, 32)).getResult()) {
+            return paramValidationRst;
+        }
+
+        if (!(paramValidationRst = ValidatorUtil.strLen("nickname", nickname, 4, 16)).getResult()) {
+            return paramValidationRst;
+        }
+
+        if (!(paramValidationRst = ValidatorUtil.strLen("fullName", fullName, 2, 64)).getResult()) {
+            return paramValidationRst;
+        }
+
+        if (!(paramValidationRst = ValidatorUtil.isGender(gender)).getResult()) {
+            return paramValidationRst;
+        }
+
+        if (!(paramValidationRst = ValidatorUtil.arthimatic("dateOfBirth", dateOfBirth, 0L, Long.MAX_VALUE)).getResult()) {
+            return paramValidationRst;
+        }
+
+        // Password salting and hashing
+        ApiResult hashingPasswordRst = hashingPassword(password);
+
+        if (!hashingPasswordRst.getResult()) {
+            logger.error("'hashingPasswordRst' is false!");
+            return hashingPasswordRst;
+        }
+
+        password = (String) hashingPasswordRst.getData("password");
+
+        // Find users from DB
+        if (!(paramValidationRst = selectUserByEmail(email)).getResult()) {
+            logger.error("selectUserByEmail() return false!");
+            return paramValidationRst;
+        }
+
+        Users selectedUser = (Users) paramValidationRst.getData("selectedUser");
+
+        if (selectedUser == null) {
+            logger.error("'selectedUser' is null!");
+            return ApiResult.make(false);
+        }
+
+        // JPA - update users
+        try {
+            Users updatedUser = (selectedUser.toBuilder())
+                                             .password(password)
+                                             .nickname(nickname)
+                                             .fullName(fullName)
+                                             .gender(gender.charAt(0))
+                                             .dateOfBirth(dateOfBirth)
+                                             .build();
+
+            if (usersRepo.save(updatedUser) == null) {
+                logger.error("save() for update return null!");
+                throw new Exception();
+            }
+
+            logger.info("JPA - update success! (updatedUser:" + updatedUser.toString() + ")");
+        }
+        catch (Exception e) {
+            logger.error("JPA Exception!", e);
+            return ApiResult.make(false, "회원정보 DB수정중 오류가 발생했습니다.");
         }
 
         return ApiResult.make(true);

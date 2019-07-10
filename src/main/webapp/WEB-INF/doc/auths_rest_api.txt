@@ -56,7 +56,7 @@
 | URL       : /users                                                                             |
 | Method    : PUT                                                                                |
 | ReqHeader : {"userJwt(R)"}                                                                     |
-| ReqBody   : {"fullName","gender","dateOfBirth"}                                                |
+| ReqBody   : {"password","nickname","fullName","gender","dateOfBirth"}                          |
 | ResHeader :                                                                                    |
 | ResBody   : Default                                                                            |
 | Comment   :                                                                                    |

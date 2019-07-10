@@ -24,6 +24,24 @@ public class ValidatorUtil {
         return ApiResult.make(true);
     }
 
+    public static ApiResult arthimatic(String key, long value, long min, long max) {
+        try {
+            if (value < min) {
+                throw new Exception();
+            }
+            
+            if (value > max) {
+                throw new Exception();
+            }
+        }
+        catch (Exception e) {
+            logger.error("'" + key + "'s NOT between " + min + " < " + value + " < " + max);
+            return ApiResult.make(false, "'" + key + "' 는 " + min + "~" + max + "사이의 정수여야 합니다.");
+        }
+
+        return ApiResult.make(true);
+    }
+
     public static ApiResult byteLen(String key, String value, int minLen, int maxLen) {
         ApiResult validationRst = null;
 
