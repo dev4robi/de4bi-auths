@@ -1,5 +1,7 @@
 package com.authserver.service;
 
+import javax.transaction.Transactional;
+
 import com.authserver.data.ApiResult;
 import com.authserver.data.jpa.enums.UsersStatus;
 import com.authserver.data.jpa.repository.UsersRepository;
@@ -118,11 +120,10 @@ public class UsersService {
         return ApiResult.make(true);
     }
 
+    @Transactional
     public ApiResult updateUser(String userJwt, String password, String nickname,
                                 String fullName, String gender, Long dateOfBirth) {
-        String email = "robi9202@gmail.com"; // @@ jwt분석구문 추후 추가!!
-        // @@ 업데이트 시 Duplicate entry 'robi9202@gmail.com' for key 'users_uk_idx_email'
-        // @@ 오류 발생하는것부터 해결...! 인덱스 중복...
+        final String email = "robi9202@gmail.com"; // @@ jwt분석구문 추후 추가!!
 
         // Param check
         ApiResult paramValidationRst = null;
@@ -167,23 +168,22 @@ public class UsersService {
             return paramValidationRst;
         }
 
-        Users selectedUser = (Users) paramValidationRst.getData("selectedUser");
+        Users updatedUser = (Users) paramValidationRst.getData("selectedUser");
 
-        if (selectedUser == null) {
-            logger.error("'selectedUser' is null!");
+        if (updatedUser == null) {
+            logger.error("'updatedUser' is null!");
             return ApiResult.make(false);
         }
 
         // JPA - update users
         try {
-            Users updatedUser = (selectedUser.toBuilder())
-                                             .password(password)
-                                             .nickname(nickname)
-                                             .fullName(fullName)
-                                             .gender(gender.charAt(0))
-                                             .dateOfBirth(dateOfBirth)
-                                             .build();
-
+            // [Note] 빌더로 새 Users 객체를 생성하여 save()하면, Duplicated Key 오류 발생.
+            updatedUser.setPassword(password);
+            updatedUser.setNickname(nickname);
+            updatedUser.setFullName(fullName);
+            updatedUser.setGender(gender.charAt(0));
+            updatedUser.setDateOfBirth(dateOfBirth);
+            
             if (usersRepo.save(updatedUser) == null) {
                 logger.error("save() for update return null!");
                 throw new Exception();
@@ -194,6 +194,39 @@ public class UsersService {
         catch (Exception e) {
             logger.error("JPA Exception!", e);
             return ApiResult.make(false, "회원정보 DB수정중 오류가 발생했습니다.");
+        }
+
+        return ApiResult.make(true);
+    }
+
+    @Transactional
+    public ApiResult deleteUser(String userJwt) {
+        final String email = "robi9202@gmail.com"; // @@ jwt분석구문 추후 추가!!
+
+        // Param check
+        ApiResult paramValidationRst = null;
+
+        if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+            return paramValidationRst;
+        }
+
+        Users deletedUser = (Users) paramValidationRst.getData("selectedUser");
+
+        // JPA - delete(update) users
+        try { 
+            deletedUser.setStatus(UsersStatus.DEREGISTERED);
+            deletedUser.setLastLoginTime(System.currentTimeMillis());
+
+            if (usersRepo.save(deletedUser) == null) {
+                logger.error("save() for update return null!");
+                throw new Exception();
+            }
+
+            logger.info("JPA - delete(update) success! (deletedUser:" + deletedUser.toString() + ")");
+        }
+        catch (Exception e) {
+            logger.error("JPA Exception!", e);
+            return ApiResult.make(false, "회원 탈퇴중 DB오류가 발생했습니다.");
         }
 
         return ApiResult.make(true);

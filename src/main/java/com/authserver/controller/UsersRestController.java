@@ -2,6 +2,7 @@ package com.authserver.controller;
 
 import java.util.Map;
 
+import com.authserver.data.vo.DeleteUsersVO;
 import com.authserver.data.vo.PostUsersVO;
 import com.authserver.data.vo.PutUsersVO;
 import com.authserver.service.UsersService;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
@@ -26,6 +28,7 @@ public class UsersRestController {
    
     @GetMapping
     public Map<String, Object> getUsers() {
+        //@@ Delete 테스트 및 select 구현부터 시작. @@
         return null;
     }
 
@@ -36,13 +39,13 @@ public class UsersRestController {
     }
 
     @PutMapping
-    public Map<String, Object> putUsers(@RequestBody PutUsersVO putUsersVO) {
-        return usersSvc.updateUser(putUsersVO.getUserJwt(), putUsersVO.getPassword(), putUsersVO.getNickname(),
+    public Map<String, Object> putUsers(@RequestHeader String userJwt, @RequestBody PutUsersVO putUsersVO) {
+        return usersSvc.updateUser(userJwt, putUsersVO.getPassword(), putUsersVO.getNickname(),
                                    putUsersVO.getFullName(), putUsersVO.getGender(), putUsersVO.getDateOfBirth()).toMap();
     }
 
     @DeleteMapping
-    public Map<String, Object> deleteUsers() {
-        return null;
+    public Map<String, Object> deleteUsers(@RequestHeader String userJwt) {
+        return usersSvc.deleteUser(userJwt).toMap();
     }
 }

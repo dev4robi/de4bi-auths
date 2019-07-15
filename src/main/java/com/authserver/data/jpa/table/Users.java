@@ -20,13 +20,14 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@DynamicUpdate
 @Table(name = "users", indexes = { @Index(columnList = "email"), @Index(columnList = "nickname") })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
+@Setter
 @ToString
 public class Users {
     
