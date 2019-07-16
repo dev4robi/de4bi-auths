@@ -28,19 +28,40 @@ public class UsersService {
     private UsersRepository usersRepo;
     private Environment env;
 
-    public ApiResult selectUserByEmail(String email) {
+    public ApiResult selectUserByKey(Long id, String email) {
         // Param check
         ApiResult paramValidationRst = null;
+        boolean isKeyEmail = false;
 
-        if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
-            return paramValidationRst;
+        if (id != null) {
+            if (!(paramValidationRst = ValidatorUtil.arthimatic("id", id, 1L, Long.MAX_VALUE)).getResult()) {
+                return paramValidationRst;
+            }
+
+            isKeyEmail = false;
+        }
+        else if (email != null) {
+            if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+                return paramValidationRst;
+            }
+
+            isKeyEmail = true;
+        }
+        else {
+            logger.error("Both 'id' and 'email' are null!");
+            return ApiResult.make(false, "아이디 혹은 이메일값이 필요합니다.");
         }
 
         // JPA - select from users
         Users selectedUser = null;
 
         try {
-            selectedUser = usersRepo.findByEmail(email);
+            if (isKeyEmail) {
+                selectedUser = usersRepo.findByEmail(email);
+            }
+            else {
+                selectedUser = usersRepo.findById(id).get();
+            }
 
             if (selectedUser == null) {
                 logger.error("'selectedUser' is null!");
@@ -163,7 +184,7 @@ public class UsersService {
         password = (String) hashingPasswordRst.getData("password");
 
         // Find users from DB
-        if (!(paramValidationRst = selectUserByEmail(email)).getResult()) {
+        if (!(paramValidationRst = selectUserByKey(null, email)).getResult()) {
             logger.error("selectUserByEmail() return false!");
             return paramValidationRst;
         }
@@ -201,7 +222,7 @@ public class UsersService {
 
     @Transactional
     public ApiResult deleteUser(String userJwt) {
-        final String email = "robi9202@gmail.com"; // @@ jwt분석구문 추후 추가!!
+        final String email = "robi02@naver.com"; // @@ jwt분석구문 추후 추가!!
 
         // Param check
         ApiResult paramValidationRst = null;
@@ -210,7 +231,17 @@ public class UsersService {
             return paramValidationRst;
         }
 
+        if (!(paramValidationRst = selectUserByKey(null, email)).getResult()) {
+            logger.error("selectUserByEmail() return false!");
+            return paramValidationRst;
+        }
+
         Users deletedUser = (Users) paramValidationRst.getData("selectedUser");
+
+        if (deletedUser.getStatus() == UsersStatus.DEREGISTERED) {
+            logger.error("User already deregestered! (email: " + email + ")");
+            return ApiResult.make(false, "이미 탈퇴한 회원입니다.");
+        }
 
         // JPA - delete(update) users
         try { 

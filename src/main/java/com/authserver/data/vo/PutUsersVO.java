@@ -9,7 +9,6 @@ import lombok.ToString;
 @ToString
 public class PutUsersVO {
 
-    private String userJwt;
     private String password;
     private String nickname;
     private String fullName;
