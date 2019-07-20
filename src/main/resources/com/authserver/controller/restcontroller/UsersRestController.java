@@ -1,4 +1,4 @@
-package com.authserver.controller;
+package com.authserver.controller.restcontroller;
 
 import java.util.Map;
 
@@ -29,13 +29,19 @@ public class UsersRestController {
     @GetMapping("/users/{id}")
     public Map<String, Object> getUsersById(@RequestHeader String userJwt,
                                             @PathVariable Long id) {
-        return usersSvc.selectUserByKey(id, null).toMap();
+        return usersSvc.selectUserByKey("id", id.toString()).toMap();
     }
 
     @GetMapping("/users/email/{email}")
     public Map<String, Object> getUsersByEmail(@RequestHeader String userJwt,
                                                @PathVariable String email) {
-        return usersSvc.selectUserByKey(null, email).toMap();
+        return usersSvc.selectUserByKey("email", email).toMap();
+    }
+
+    @GetMapping("/users/nickname/{nickname}")
+    public Map<String, Object> getUsersByNickName(@RequestHeader String userJwt,
+                                                  @PathVariable String nickname) {
+        return usersSvc.selectUserByKey("nickname", nickname).toMap();
     }
 
     @PostMapping("/users")

@@ -28,39 +28,41 @@ public class UsersService {
     private UsersRepository usersRepo;
     private Environment env;
 
-    public ApiResult selectUserByKey(Long id, String email) {
+    public ApiResult selectUserByKey(String keyName, String value) {
         // Param check
         ApiResult paramValidationRst = null;
-        boolean isKeyEmail = false;
-
-        if (id != null) {
-            if (!(paramValidationRst = ValidatorUtil.arthimatic("id", id, 1L, Long.MAX_VALUE)).getResult()) {
-                return paramValidationRst;
-            }
-
-            isKeyEmail = false;
-        }
-        else if (email != null) {
-            if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
-                return paramValidationRst;
-            }
-
-            isKeyEmail = true;
-        }
-        else {
-            logger.error("Both 'id' and 'email' are null!");
-            return ApiResult.make(false, "아이디 혹은 이메일값이 필요합니다.");
+        
+        if (keyName == null) {
+            logger.error("'keyName' is null!");
+            return ApiResult.make(false);
         }
 
         // JPA - select from users
         Users selectedUser = null;
 
         try {
-            if (isKeyEmail) {
-                selectedUser = usersRepo.findByEmail(email);
-            }
-            else {
-                selectedUser = usersRepo.findById(id).get();
+            switch (keyName) {
+                case "id":
+                    if (!(paramValidationRst = ValidatorUtil.arthimatic(keyName, value, 1L, Long.MAX_VALUE)).getResult()) {
+                        return paramValidationRst;
+                    }
+                    selectedUser = usersRepo.findById(Long.valueOf(value)).get();
+                    break;
+                case "email":
+                    if (!(paramValidationRst = ValidatorUtil.isEmail(value)).getResult()) {
+                        return paramValidationRst;
+                    }
+                    selectedUser = usersRepo.findByEmail(value);
+                    break;
+                case "nickname":
+                    if (!(paramValidationRst = ValidatorUtil.nullOrZeroLen(keyName, value)).getResult()) {
+                        return paramValidationRst;
+                    }
+                    selectedUser = usersRepo.findByNickname(value);
+                    break;
+                default:
+                    logger.error("Undefined 'keyName'! (keyName:" + keyName + ")");
+                    return ApiResult.make(false);
             }
 
             if (selectedUser == null) {

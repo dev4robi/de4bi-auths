@@ -42,6 +42,17 @@ public class ValidatorUtil {
         return ApiResult.make(true);
     }
 
+    public static ApiResult arthimatic(String key, String value, long min, long max) {
+        try {
+            long longValue = Long.valueOf(value);
+            return arthimatic(key, longValue, min, max);
+        }
+        catch (NumberFormatException e) {
+            logger.error("Exception!", e);
+            return ApiResult.make(false, "'" + key + "' 값이 숫자가 아닙니다. (" + key + ":" + value + ")");
+        }
+    }
+
     public static ApiResult byteLen(String key, String value, int minLen, int maxLen) {
         ApiResult validationRst = null;
 
