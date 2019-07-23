@@ -14,8 +14,6 @@ import javax.persistence.Table;
 import com.authserver.data.jpa.converter.UsersStatusConverter;
 import com.authserver.data.jpa.enums.UsersStatus;
 
-import org.hibernate.annotations.DynamicUpdate;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

@@ -64,11 +64,6 @@ public class UsersService {
                     logger.error("Undefined 'keyName'! (keyName:" + keyName + ")");
                     return ApiResult.make(false);
             }
-
-            if (selectedUser == null) {
-                logger.error("'selectedUser' is null!");
-                throw new Exception();
-            }
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);

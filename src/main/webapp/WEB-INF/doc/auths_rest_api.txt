@@ -1,5 +1,5 @@
 -- Service: Auth-Server (auths)
--- Last Modified: 2019.06.16
+-- Last Modified: 2019.07.20
 -- Version: 1.0.0
 
 +------------------------------------------------------------------------------------------------+
@@ -33,7 +33,7 @@
 +------------------------------------------------------------------------------------------------+
 | Access    : Owner                                                                              |
 | Service   : 회원정보 조회                                                                      |
-| URL       : /users/{id}|{email}|{nickName}                                                     |
+| URL       : /users/(id|email|nickName)/({id}|{email}|{nickName})                               |
 | Method    : GET                                                                                |
 | ReqHeader : {"userJwt(R)"}                                                                     |
 | ReqBody   :                                                                                    |
@@ -70,6 +70,17 @@
 | URL       : /users                                                                             |
 | Method    : DELETE                                                                             |
 | ReqHeader : {"userJwt(R)"}                                                                     |
+| ReqBody   :                                                                                    |
+| ResHeader :                                                                                    |
+| ResBody   : Default                                                                            |
+| Comment   :                                                                                    |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Public                                                                             |
+| Service   : 회원명 중복여부 검색                                                               |
+| URL       : /users/nickname/{nickname}/duplicated                                              |
+| Method    : GET                                                                                |
+| ReqHeader :                                                                                    |
 | ReqBody   :                                                                                    |
 | ResHeader :                                                                                    |
 | ResBody   : Default                                                                            |

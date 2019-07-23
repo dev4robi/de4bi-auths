@@ -4,7 +4,10 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
+import com.authserver.data.ApiResult;
 import com.robi.oauth.GoogleOAuth;
+import com.robi.util.CipherUtil;
+import com.robi.util.MapUtil;
 import com.robi.util.RandomUtil;
 
 import org.apache.commons.codec.binary.Hex;
@@ -27,7 +30,7 @@ public class GoogleOAuthService {
     private GoogleOAuth googleOAuth;
 
     // OAuth URL 생성
-    public String makeCodeUrl() {
+    public ApiResult makeCodeUrl() {
         String nonce = RandomUtil.genRandomStr(16, RandomUtil.ALPHABET | RandomUtil.NUMERIC);
         String clientId = env.getProperty("auth.google.clientId");
         String redirectUrl = env.getProperty("auth.google.tokenRedirectionUrl");
@@ -40,7 +43,7 @@ public class GoogleOAuthService {
         }
         catch (NoSuchAlgorithmException e) {
             logger.error("Exception!", e);
-            return null;
+            return ApiResult.make(false);
         }
 
         md.update((clientId + nonce + redirectionSignKey).getBytes());
@@ -50,19 +53,20 @@ public class GoogleOAuthService {
         String rtUrl = googleOAuth.makeUrlForCode(clientId, "code", "email", nonce, redirectUrl,
                                                   state, "select_account", "wap", "loginHint", "offline", 
                                                   false, null, "*");
-        return rtUrl;
+        
+        return ApiResult.make(true, MapUtil.toMap("codeUrl", rtUrl));
     }
 
     // state로부터 sign검사, code로부터 idToken획득
-    public String getIdTokenFromCode(String code, String state) {
+    public ApiResult getIdTokenFromCode(String code, String state) {
         if (code == null || code.length() == 0) {
             logger.error("'code' is null or zero length! (code:" + code + ")");
-            return null;
+            return ApiResult.make(false);
         }
 
         if (state == null || state.length() == 0) {
             logger.error("'state' is null or zero length! (state:" + state + ")");
-            return null;
+            return ApiResult.make(false);
         }
 
         // 응답값 해시서명 검사
@@ -77,7 +81,7 @@ public class GoogleOAuthService {
         }
         catch (NoSuchAlgorithmException e) {
             logger.error("Exception!", e);
-            return null;
+            return ApiResult.make(false);
         }
 
         md.update(signStr.getBytes());
@@ -101,27 +105,43 @@ public class GoogleOAuthService {
         
         if ((rtIdToken = googleOAuth.getIdToken(code, clientId, clientSecret, tokenRequestUrl, "authorization_code")) == null) {
             logger.error("'rtIdToken' is null!");
-            return null;
+            return ApiResult.make(false);
         }
 
-        return rtIdToken;
+        return ApiResult.make(true, MapUtil.toMap("idToken", rtIdToken));
     }
 
     // idToken(JWT)를 식별, 파싱하여 사용자 이메일값을 반환
-    public String getEmailFromIdToken(String idToken) {
+    public ApiResult getEmailFromIdToken(String idToken) {
         if (idToken == null || idToken.length() == 0) {
             logger.error("'idToken' is null or zero length! (idToken:" + idToken + ")");
-            return null;
+            return ApiResult.make(false);
         }
 
         Map<String, Object> parsedJwtMap = googleOAuth.verifyAndParseIdTokenJwt(idToken);
 
         if (parsedJwtMap == null) {
             logger.error("'parsedJwtMap' is null!");
-            return null;
+            return ApiResult.make(false);
         }
 
         Object emailObj = parsedJwtMap.get("email");
-        return (emailObj != null ? emailObj.toString() : null);
+        return (emailObj != null ? ApiResult.make(true, MapUtil.toMap("email", emailObj.toString())) : ApiResult.make(false));
+    }
+
+    // 가입페이지에서 이메일 변조를 방지하기 위해 생성하는 sign값
+    public ApiResult genSignAndNonceForEmailValidation(String email) {
+        if (email == null) {
+            logger.error("'email' is null!");
+            return ApiResult.make(false);
+        }
+
+        // nonce생성
+        int nonceLen = 16;
+        String nonce = RandomUtil.genRandomStr(nonceLen, RandomUtil.ALPHABET | RandomUtil.NUMERIC);
+
+        // sign생성
+        String sign = Hex.encodeHexString(CipherUtil.hashing(CipherUtil.SHA256, (email + nonce.substring(0, nonceLen / 2)).getBytes(), env.getProperty("register.email.salt").getBytes()));
+        return ApiResult.make(true, MapUtil.toMap("sign", sign, "nonce", nonce));
     }
 }

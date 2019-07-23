@@ -31,6 +31,10 @@ public class ApiResult {
         return make(result, message, null);
     }
 
+    public static ApiResult make(boolean result, Map<String, Object> data) {
+        return make(result, null, data);
+    }
+
     public static ApiResult make(boolean result, String message, Map<String, Object> data) {
         return new ApiResult(result, message, data);
     }
@@ -57,6 +61,20 @@ public class ApiResult {
         }
 
         return this.data.get(key);
+    }
+
+    public String getDataAsStr(String key) {
+        if (this.data == null) {
+            return null;
+        }
+
+        Object obj = this.data.get(key);
+
+        if (obj == null) {
+            return null;
+        }
+        
+        return obj.toString();
     }
 
     public void addData(String key, Object value) {
