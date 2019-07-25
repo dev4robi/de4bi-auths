@@ -59,7 +59,7 @@
 	<!-- Social login -->
 	<div class="row justify-content-around align-items-center">
 		<div class="col-md-10 text-center align-self-center">
-			<h5>또는</h5>
+			<h5>또는 소셜 아이디로 가입</h5>
 		</div>
 		<div class="col-md-10 text-center align-self-center">
 			<!-- Reference - https://developers.google.com/identity/protocols/OAuth2WebServer -->
@@ -96,5 +96,6 @@
 			</c:choose>
 		</div>
 	</div>
+	<input type="hidden" id="alert_msg" value="${alertMsg}">
 </body>
 </html>

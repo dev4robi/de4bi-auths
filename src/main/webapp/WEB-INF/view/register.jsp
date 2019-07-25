@@ -52,7 +52,7 @@
             <div class="form-group col-md-7 align-self-center">
                 <label for="inputNickname4"><b>Nickname</b></label>
                 <div class="input-group">
-                    <input type="text" class="form-control" placeholder="닉네임" aria-label="닉네임" aria-describedby="button_nickname_duplicated_check" id="input_nickname">
+                    <input type="text" class="form-control" placeholder="닉네임(2~16자)" aria-label="닉네임" aria-describedby="button_nickname_duplicated_check" id="input_nickname">
                     <div class="input-group-append">
                         <button class="btn btn-outline-success" type="button" id="button_nickname_duplicated_check">중복 확인</button>
                     </div>
@@ -65,17 +65,17 @@
             <div class="form-group col-md-7 align-self-center">
 				<label for="input_radio_gender"><b>Gender</b></label><br>
 				<div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_radio_gender_male" value="option1">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_radio_gender_male" value="M">
                     <label class="form-check-label" for="input_radio_gender_male">M(남)</label>
                 </div>
                 <div class="form-check form-check-inline">
-                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_radio_gender_female" value="option2">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_radio_gender_female" value="F">
                     <label class="form-check-label" for="input_radio_gender_female">F(여)</label>
                 </div>
 			</div>
             <div class="form-group col-md-7 align-self-center">
-				<label for="input_date_of_birth"><b>Birthday</b></label>
-				<input type="text" class="form-control" id="input_date_of_birth" placeholder="생년월일">
+				<label for="input_date_of_birth"><b>Date of birth</b></label>
+				<input type="text" class="form-control" id="input_date_of_birth" placeholder="생년월일(2019.02.21)">
 			</div>
 			<div class="form-group col-md-7 align-self-center">
                 <label for="inputGender4"><b>Member</b></label><br>
@@ -88,7 +88,7 @@
                         </div>
                         <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
                             <div class="card-body">
-                                Anim pariatur cliche reprehenderit, enim eiusmod high life accusamus terry richardson ad squid. 3 wolf moon officia aute, non cupidatat skateboard dolor brunch. Food truck quinoa nesciunt laborum eiusmod. Brunch 3 wolf moon tempor, sunt aliqua put a bird on it squid single-origin coffee nulla assumenda shoreditch et. Nihil anim keffiyeh helvetica, craft beer labore wes anderson cred nesciunt sapiente ea proident. Ad vegan excepteur butcher vice lomo. Leggings occaecat craft beer farm-to-table, raw denim aesthetic synth nesciunt you probably haven't heard of them accusamus labore sustainable VHS.
+                                <span id=span_terms_of_service>${termsOfService}</span>
                             </div>
                         </div>
                     </div>
