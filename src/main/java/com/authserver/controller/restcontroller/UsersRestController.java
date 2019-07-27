@@ -61,15 +61,4 @@ public class UsersRestController {
     public Map<String, Object> deleteUsers(@RequestHeader String userJwt) {
         return usersSvc.deleteUser(userJwt).toMap();
     }
-
-    @GetMapping("/users/nickname/{nickname}/duplicated")
-    public Map<String, Object> checkNicknameDuplicated(@PathVariable String nickname) {
-        ApiResult selectResult = usersSvc.selectUserByKey("nickname", nickname);
-
-        if (selectResult.getResult() && selectResult.getDataAsStr("selectedUser") != null) {
-            return ApiResult.make(false).toMap(); // 이미 회원정보 있음
-        }
-        
-        return ApiResult.make(true).toMap();
-    }
 }

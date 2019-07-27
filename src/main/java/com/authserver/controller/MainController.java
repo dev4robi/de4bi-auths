@@ -26,7 +26,7 @@ public class MainController {
     private GoogleOAuthService googleOauthSvc;
 
     @RequestMapping("/main")
-    public ModelAndView main() {
+    public ModelAndView mainPage() {
         Map<String, Object> modelMap = new HashMap<String, Object>();
 
         // - Google Oauth ---------------------------------------------------------------
@@ -65,8 +65,14 @@ public class MainController {
     }
 
     @RequestMapping("/register")
-    public ModelAndView registerGoogle(
+    public ModelAndView registerPage(
         @RequestParam String email, @RequestParam String sign, @RequestParam String nonce) {
         return new ModelAndView("register", MapUtil.toMap("email", email, "sign", sign, "nonce", nonce));
+    }
+
+    @RequestMapping("/errors")
+    public ModelAndView errorPage(
+        @RequestParam(required = false) String alertMsg, @RequestParam(required = false) String errorMsg) {
+        return new ModelAndView("error", MapUtil.toMap("alertMsg", alertMsg, "errorMsg", errorMsg));
     }
 }

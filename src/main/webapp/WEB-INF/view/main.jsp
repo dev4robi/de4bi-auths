@@ -96,6 +96,5 @@
 			</c:choose>
 		</div>
 	</div>
-	<input type="hidden" id="alert_msg" value="${alertMsg}">
 </body>
 </html>

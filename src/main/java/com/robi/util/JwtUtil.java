@@ -36,7 +36,7 @@ public class JwtUtil {
      * @return 생성된 JWT 문자열.
      * @see https://github.com/jwtk/jjwt
      */
-    public static String buildJwt(Map<String, Object> jwtClaims, Key signKey) {
+    public static String buildJwt(Map<String, Object> jwtHeader, Map<String, Object> jwtClaims, Key signKey) {
         try {
             // 파라미터 검사
             if (signKey == null) {
@@ -56,9 +56,13 @@ public class JwtUtil {
             // - setExpiration(Date) : 'exp'
             // - setNotBefore(Date) : 'nbf'
             
-            // 난수패딩 헤더 생성
+            // 난수패딩 헤더 추가
             Map<String, Object> headerMap = new HashMap<String, Object>();
             headerMap.put("pad", RandomUtil.genRandomStr(16, RandomUtil.ALPHABET | RandomUtil.NUMERIC));
+
+            if (jwtHeader != null) {
+                headerMap.putAll(jwtHeader);
+            }
             
             // JWT 생성하여 반환
             return Jwts.builder().setHeader(headerMap).setClaims(jwtClaims).signWith(signKey).compact();

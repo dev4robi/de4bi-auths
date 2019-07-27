@@ -1,5 +1,10 @@
 package com.authserver.service;
 
+import java.security.Key;
+import java.security.KeyFactory;
+import java.util.Date;
+
+import javax.crypto.spec.SecretKeySpec;
 import javax.transaction.Transactional;
 
 import com.authserver.data.ApiResult;
@@ -8,6 +13,7 @@ import com.authserver.data.jpa.repository.UsersRepository;
 import com.authserver.data.jpa.table.Users;
 import com.authserver.util.ValidatorUtil;
 import com.robi.util.CipherUtil;
+import com.robi.util.JwtUtil;
 import com.robi.util.MapUtil;
 
 import org.apache.commons.codec.binary.Hex;
@@ -16,7 +22,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Base64Utils;
 
+import io.jsonwebtoken.security.Keys;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -26,7 +34,40 @@ public class UsersService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private UsersRepository usersRepo;
-    private Environment env;
+    private static Environment env;
+
+    private static final String USER_JWT_VERSION;
+    private static final Key USER_JWT_SIGN_KEY;
+    private static final SecretKeySpec USER_JWT_AES_KEY;
+    private static final Long USER_JWT_DEFAULT_DURATION_MS;
+
+    static {
+        // USER_JWT_VERSION
+        USER_JWT_VERSION = env.getProperty("userJwt.jwtVersion");
+
+        // USER_JWT_SIGN_KEY
+        byte[] jwtHashKeyByte = null;
+        jwtHashKeyByte = env.getProperty("userJwt.jwtHashKey").getBytes();
+
+        if (jwtHashKeyByte.length != 32) { // JwtSecretKey값이 32Byte가 아니면, 패딩하거나 자름
+            byte[] newJwtSecretKeyByte = new byte[32];
+            System.arraycopy(jwtHashKeyByte, 0, newJwtSecretKeyByte, 0,
+                    Math.min(jwtHashKeyByte.length, newJwtSecretKeyByte.length));
+            jwtHashKeyByte = newJwtSecretKeyByte;
+        }
+
+        USER_JWT_SIGN_KEY = Keys.hmacShaKeyFor(jwtHashKeyByte);
+
+        // USER_JWT_AES_KEY
+        byte[] aes128KeyBytes = new byte[16];
+        byte[] aesKeyBytesFromEnv = env.getProperty("userJwt.jwtAesKey").getBytes();
+        System.arraycopy(aesKeyBytesFromEnv, 0, aes128KeyBytes, 0,
+                         Math.min(aes128KeyBytes.length, aesKeyBytesFromEnv.length));
+        USER_JWT_AES_KEY = new SecretKeySpec(aes128KeyBytes, "AES");
+
+        // USER_JWT_DEFAULT_DURATION_MS
+        USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtLifeMinDefault"));
+    }
 
     public ApiResult selectUserByKey(String keyName, String value) {
         // Param check
@@ -278,5 +319,100 @@ public class UsersService {
         }
 
         return ApiResult.make(true, null, MapUtil.toMap("password", password));
+    }
+
+    public ApiResult issueUserJwt(String audience, String email, String password, Long duration) {
+        // 파라미터 검사
+        ApiResult paramRst = null;
+
+        if (!(paramRst = ValidatorUtil.nullOrZeroLen("audience", audience)).getResult()) {
+            return paramRst;
+        }
+
+        if (!(paramRst = ValidatorUtil.isEmail(email)).getResult()) {
+            return paramRst;
+        }
+
+        if (!(paramRst = ValidatorUtil.nullOrZeroLen("password", password)).getResult()) {
+            return paramRst;
+        }
+        
+        if (duration == null) {
+            duration = USER_JWT_DEFAULT_DURATION_MS;
+        }
+
+        // 회원정보 획득
+        ApiResult selectUserRst = selectUserByKey("email", email);
+
+        if (selectUserRst == null || !selectUserRst.getResult()) {
+            logger.error("Fail to find user! (email:" + email + ")");
+            return ApiResult.make(false, "회원 정보를 찾을 수 없습니다.");
+        }
+
+        // 비밀번호 검사
+        ApiResult pwHashingRst = hashingPassword(password);
+
+        if (pwHashingRst == null || !pwHashingRst.getResult()) {
+            logger.error("Fail to hashing request password!");
+            return pwHashingRst;
+        }
+
+        Users selectedUser = (Users) selectUserRst.getData("selectedUser");
+        String hashedPassword = pwHashingRst.getDataAsStr("password");
+
+        if (!selectedUser.getPassword().equals(hashedPassword)) {
+            logger.error("Password NOT equals!");
+            return ApiResult.make(false, "비밀번호가 일치하지 않습니다.");
+        }
+
+        // JWT 발급
+        // [JWT]
+        //  <Header>
+        //   - setHeader(Map<String, Object>)
+        //  <Claims>
+        //   - setClaims(Map<String, Object>)
+        //   - setId(String) : 'jti'
+        //   - setSubject(String) : 'sub'
+        //   - setAudience(String) : 'aud'
+        //   - setIssuer(String) : 'iss'
+        //   - setIssuedAt(String) : 'iat'
+        //   - setExpiration(Date) : 'exp'
+        //   - setNotBefore(Date) : 'nbf'
+        long jwtExpiredTimeMs = System.currentTimeMillis() + duration;
+
+        String rawUserJwt = JwtUtil.buildJwt(MapUtil.toMap("ver", USER_JWT_VERSION),
+                                             MapUtil.toMap("sub", "dev4robi-user-jwt",
+                                                           "aud", audience,
+                                                           "iat", "dev4robi-auths",
+                                                           "exp", new Date(jwtExpiredTimeMs)),
+                                             USER_JWT_SIGN_KEY);
+
+        if (rawUserJwt == null) {
+            logger.error("'rawUserJwt' is null!");
+            return ApiResult.make(false, "JWT생성중 오류가 발생했습니다.");
+        }
+
+        // 발급된 JWT 암호화
+        byte[] cryptedUserJwt = CipherUtil.encrypt(CipherUtil.AES_CBC_PKCS5, rawUserJwt.getBytes(), USER_JWT_AES_KEY);
+        if (cryptedUserJwt == null) {
+            logger.error("'cryptedUserJwt' is null!");
+            return ApiResult.make(false, "JWT암호화중 오류가 발생했습니다.");
+        }
+
+        // JWT URL인코딩 수행
+        String base64UserJwt = Base64Utils.encodeToUrlSafeString(cryptedUserJwt);
+
+        if (base64UserJwt == null) {
+            logger.error("'base64UserJwt' is null!");
+            return ApiResult.make(false, "JWT변환중 오류가 발생했습니다.");
+        }
+
+        logger.info("Issuing user jwt success! (email: " + email + ")");
+        return ApiResult.make(true, MapUtil.toMap("userJwt", base64UserJwt));
+    }
+
+    public ApiResult validateUserJwt(String userJwt) {
+        logger.error("아직 구현되지 않은 부분입니다.");
+        return null;
     }
 }

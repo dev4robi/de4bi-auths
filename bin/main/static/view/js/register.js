@@ -7,7 +7,9 @@ $(document).ready(function(){
             return;
         }
 
-        AJAX.apiCall('GET', '/users/nickname/' + userNickname + '/duplicated', null, null,
+        var checkDuplicationApiURL = '/users/api/duplicated/' + userNickname;
+
+        AJAX.apiCall('GET', checkDuplicationApiURL, null, null,
             // Always    
             function() {
                 // ...
