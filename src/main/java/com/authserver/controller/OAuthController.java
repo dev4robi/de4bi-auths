@@ -1,13 +1,10 @@
 package com.authserver.controller;
 
-import java.net.URLEncoder;
-
 import com.authserver.data.ApiResult;
 import com.authserver.service.GoogleOAuthService;
 import com.authserver.service.UsersService;
 import com.robi.util.MapUtil;
 
-import org.apache.http.util.CharsetUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;

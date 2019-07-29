@@ -9,6 +9,7 @@ import com.authserver.service.UsersService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
@@ -36,8 +37,8 @@ public class UsersApiController {
     }
 
     @RequestMapping(value="/users/api/jwt", method={ RequestMethod.GET, RequestMethod.POST })
-    public Map<String, Object> userApiGetJwt(@RequestParam IssueUserJwtVO issueUserJwtVo) {
-        return usersSvc.issueUserJwt(issueUserJwtVo.getAudiance(), issueUserJwtVo.getEmail(),
+    public Map<String, Object> userApiGetJwt(@ModelAttribute IssueUserJwtVO issueUserJwtVo) {
+        return usersSvc.issueUserJwt(issueUserJwtVo.getAudience(), issueUserJwtVo.getEmail(),
                                      issueUserJwtVo.getPassword(), issueUserJwtVo.getDuration()).toMap();
     }
 }

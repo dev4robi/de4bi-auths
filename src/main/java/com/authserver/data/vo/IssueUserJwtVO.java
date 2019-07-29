@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class IssueUserJwtVO {
 
-    private String audiance;
+    private String audience;
     private String email;
     private String password;
     private Long duration;

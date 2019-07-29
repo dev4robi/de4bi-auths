@@ -4,6 +4,7 @@ import java.security.Key;
 import java.security.KeyFactory;
 import java.util.Date;
 
+import javax.annotation.PostConstruct;
 import javax.crypto.spec.SecretKeySpec;
 import javax.transaction.Transactional;
 
@@ -19,29 +20,29 @@ import com.robi.util.MapUtil;
 import org.apache.commons.codec.binary.Hex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
 import io.jsonwebtoken.security.Keys;
-import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 @PropertySource("config.properties")
 @Service
 public class UsersService {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
-    private UsersRepository usersRepo;
-    private static Environment env;
+    @Autowired private UsersRepository usersRepo;
+    @Autowired private Environment env;
 
-    private static final String USER_JWT_VERSION;
-    private static final Key USER_JWT_SIGN_KEY;
-    private static final SecretKeySpec USER_JWT_AES_KEY;
-    private static final Long USER_JWT_DEFAULT_DURATION_MS;
+    private String USER_JWT_VERSION = null;
+    private Key USER_JWT_SIGN_KEY = null;
+    private SecretKeySpec USER_JWT_AES_KEY = null;
+    private Long USER_JWT_DEFAULT_DURATION_MS = null;
 
-    static {
+    @PostConstruct
+    public void postConstruct() {
         // USER_JWT_VERSION
         USER_JWT_VERSION = env.getProperty("userJwt.jwtVersion");
 
