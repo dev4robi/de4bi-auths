@@ -1,8 +1,8 @@
 package com.authserver.service;
 
 import java.security.Key;
-import java.security.KeyFactory;
 import java.util.Date;
+import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.crypto.spec.SecretKeySpec;
@@ -67,7 +67,7 @@ public class UsersService {
         USER_JWT_AES_KEY = new SecretKeySpec(aes128KeyBytes, "AES");
 
         // USER_JWT_DEFAULT_DURATION_MS
-        USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtLifeMinDefault"));
+        USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtLifeMinuteDefault")) * 60000L;
     }
 
     public ApiResult selectUserByKey(String keyName, String value) {
@@ -322,6 +322,43 @@ public class UsersService {
         return ApiResult.make(true, null, MapUtil.toMap("password", password));
     }
 
+    public ApiResult validateUserServiceAccesibble(Users valiateTargetUser) {
+        // 파라미터 검사
+        if (valiateTargetUser == null) {
+            logger.error("'valiateTargetUser' is null!");
+            return ApiResult.make(false);
+        }
+
+        // 유저상태 검사
+        String email = valiateTargetUser.getEmail();
+        UsersStatus validateUserStatus = valiateTargetUser.getStatus();
+
+        if (validateUserStatus.equals(UsersStatus.SLEEPING)) {
+            logger.info("Validated user '" + email + "' status is 'SLEEPING'!");
+            return ApiResult.make(false, "휴면중인 회원입니다.");
+        }
+        else if (validateUserStatus.equals(UsersStatus.DEREGISTERED)) {
+            logger.info("Validated user '" + email + "' status is 'DEREGISTERED'!");
+            return ApiResult.make(false, "탈퇴한 회원입니다.");
+        }
+        else if (validateUserStatus.equals(UsersStatus.BLACKLIST)) {
+            logger.info("Validated user '" + email + "' status is 'BLACKLIST'!");
+            return ApiResult.make(false, "블랙리스트 처리된 회원입니다.");
+        }
+
+        // 서비스 이용가능시점 검사
+        long curTime = System.currentTimeMillis();
+        long serviceAccessibleTime = valiateTargetUser.getAccessibleTime();
+
+        if (serviceAccessibleTime > curTime) {
+            logger.info("Validated user '" + email + "' NOT reached accessible time! (serviceAccessibleTime: " +
+                        serviceAccessibleTime + " > curTime: " + curTime + ")");
+            return ApiResult.make(false, "서비스 이용가능까지 " + (serviceAccessibleTime - curTime) + "ms 남은 회원입니다.");
+        }
+
+        return ApiResult.make(true);
+    }
+
     public ApiResult issueUserJwt(String audience, String email, String password, Long duration) {
         // 파라미터 검사
         ApiResult paramRst = null;
@@ -338,8 +375,11 @@ public class UsersService {
             return paramRst;
         }
         
-        if (duration == null) {
+        if (duration == null | duration == 0L) {
             duration = USER_JWT_DEFAULT_DURATION_MS;
+        }
+        else {
+            duration *= 1000L;
         }
 
         // 회원정보 획득
@@ -365,6 +405,14 @@ public class UsersService {
             logger.error("Password NOT equals!");
             return ApiResult.make(false, "비밀번호가 일치하지 않습니다.");
         }
+        
+        // 회원 서비스 접근허용 검사
+        ApiResult validateUserRst = validateUserServiceAccesibble(selectedUser);
+
+        if (validateUserRst == null || !validateUserRst.getResult()) {
+            logger.error("'validateUserRst' is null or result false!");
+            return validateUserRst;
+        }
 
         // JWT 발급
         // [JWT]
@@ -385,7 +433,8 @@ public class UsersService {
                                              MapUtil.toMap("sub", "dev4robi-user-jwt",
                                                            "aud", audience,
                                                            "iat", "dev4robi-auths",
-                                                           "exp", new Date(jwtExpiredTimeMs)),
+                                                           "exp", new Date(jwtExpiredTimeMs),
+                                                           "email", email),
                                              USER_JWT_SIGN_KEY);
 
         if (rawUserJwt == null) {
@@ -412,8 +461,75 @@ public class UsersService {
         return ApiResult.make(true, MapUtil.toMap("userJwt", base64UserJwt));
     }
 
-    public ApiResult validateUserJwt(String userJwt) {
-        logger.error("아직 구현되지 않은 부분입니다.");
-        return null;
+    public ApiResult validateUserJwt(String audience, String userJwt) {
+        // 파라미터 검사
+        ApiResult paramRst = null;
+
+        if (!(paramRst = ValidatorUtil.nullOrZeroLen("audience", audience)).getResult()) {
+            return paramRst;
+        }
+
+        if (!(paramRst = ValidatorUtil.nullOrZeroLen("userJwt", userJwt)).getResult()) {
+            return paramRst;
+        } 
+
+        // URL디코딩 수행
+        byte[] cryptedUserJwt = Base64Utils.decodeFromUrlSafeString(userJwt);
+        
+        if (cryptedUserJwt == null) {
+            logger.error("'cryptedUserJwt' is null!");
+            return ApiResult.make(false, "JWT변환중 오류가 발생했습니다.");
+        }
+
+        // 복호화 수행
+        byte[] rawUserJwt = CipherUtil.decrypt(CipherUtil.AES_CBC_PKCS5, cryptedUserJwt, USER_JWT_AES_KEY);
+
+        if (rawUserJwt == null) {
+            logger.error("'rawUserJwt' is null!");
+            return ApiResult.make(false, "JWT복호화중 오류가 발생했습니다.");
+        }
+
+        // JWT 파싱
+        Map<String, Object> userJwtMap = JwtUtil.parseJwt(new String(rawUserJwt), 
+                                                          MapUtil.toMap("sub", "dev4robi-user-jwt"), 
+                                                          USER_JWT_SIGN_KEY);
+
+        if (userJwtMap == null) {
+            logger.error("'userJwtMap' is null!");
+            return ApiResult.make(false, "JWT파싱중 오류가 발생했습니다.");
+        }
+
+        // Jwt발급자와 검증자 서비스명 비교
+        String originIssure = (String) userJwtMap.get("aud");
+        if (originIssure == null) {
+            logger.error("'originIssure' is null!");
+            return ApiResult.make(false, "JWT에 발급자가 포함되어있지 않습니다.");
+        }
+        else if (!originIssure.equals(audience)) {
+            logger.error("'originIssure' NOT equals 'audience'! (originIssure:" + originIssure + " != audience: " + audience);
+            return ApiResult.make(false, "JWT를 발급한 서비스와 검증하려는 서비스가 일치하지 않습니다.");
+        }
+
+        // 회원정보 획득
+        String email = (String) userJwtMap.get("email");
+        ApiResult selectUserRst = selectUserByKey("email", email);
+
+        if (selectUserRst == null || !selectUserRst.getResult()) {
+            logger.error("Fail to find user! (email:" + email + ")");
+            return ApiResult.make(false, "회원 정보를 찾을 수 없습니다.");
+        }
+
+        // 회원 서비스 접근허용 검사
+        Users validatedUser = (Users) selectUserRst.getData("selectedUser");
+        ApiResult validateUserRst = validateUserServiceAccesibble(validatedUser);
+
+        if (validateUserRst == null || !validateUserRst.getResult()) {
+            logger.error("'validateUserRst' is null or result false!");
+            return validateUserRst;
+        }
+
+        // 검증 성공
+        logger.info("'UserJwt '" + userJwt + "' for '" + audience + "' is VALIDATED! (email:" + email + ")");
+        return ApiResult.make(true);
     }
 }

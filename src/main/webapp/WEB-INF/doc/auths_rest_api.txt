@@ -78,12 +78,34 @@
 +------------------------------------------------------------------------------------------------+
 | Access    : Public                                                                             |
 | Service   : 회원명 중복여부 검색                                                               |
-| URL       : /users/nickname/{nickname}/duplicated                                              |
+| URL       : /users/api/duplicated/{nickname}                                                   |
 | Method    : GET                                                                                |
 | ReqHeader :                                                                                    |
 | ReqBody   :                                                                                    |
 | ResHeader :                                                                                    |
 | ResBody   : Default                                                                            |
 | Comment   :                                                                                    |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Owner                                                                              |
+| Service   : 유저토큰 생성                                                                      |
+| URL       : /users/api/jwt/issue                                                               |
+| Method    : POST                                                                               |
+| ReqHeader :                                                                                    |
+| ReqBody   : {"audience(R)","email(R)","password(R)","duration"}                                |
+| ResHeader :                                                                                    |
+| ResBody   : {"userJwt"}                                                                        |
+| Comment   : 'audience'서비스에 사용할 'duration(초단위, 기본값: 1800)' 동안 유지될 토큰 생성   |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Owner                                                                              |
+| Service   : 유저토큰 생성                                                                      |
+| URL       : /users/api/jwt/validate                                                            |
+| Method    : POST                                                                               |
+| ReqHeader :                                                                                    |
+| ReqBody   : {"audience(R)","userJwt(R)"}                                                       |
+| ResHeader :                                                                                    |
+| ResBody   : {"email"}                                                                          |
+| Comment   : 토큰 파싱성공 및 회원상태가 정상이라면 'audience'서비스를 이용하는 'email'값 획득  |
 |                                                                                                |
 +------------------------------------------------------------------------------------------------+
