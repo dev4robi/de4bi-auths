@@ -26,7 +26,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Base64Utils;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.IncorrectClaimException;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.MissingClaimException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 
 @PropertySource("config.properties")
 @Service
@@ -112,6 +117,13 @@ public class UsersService {
             return ApiResult.make(false, "회원정보 DB조회중 오류가 발생했습니다.");
         }
 
+        if (selectedUser == null) 
+        {   
+            logger.info("'selectedUser' is null!");
+            return ApiResult.make(false, "존재하지 않는 회원입니다.");
+        }
+
+        logger.info("User select success! (selectedUser: " + selectedUser.toString() + ")");
         return ApiResult.make(true, null, MapUtil.toMap("selectedUser", selectedUser));
     }
 
@@ -490,9 +502,47 @@ public class UsersService {
         }
 
         // JWT 파싱
-        Map<String, Object> userJwtMap = JwtUtil.parseJwt(new String(rawUserJwt), 
-                                                          MapUtil.toMap("sub", "dev4robi-user-jwt"), 
-                                                          USER_JWT_SIGN_KEY);
+        Map<String, Object> userJwtMap = null;
+        
+        try {   
+            userJwtMap = JwtUtil.parseJwt(new String(rawUserJwt), 
+                                          MapUtil.toMap("sub", "dev4robi-user-jwt"), 
+                                          USER_JWT_SIGN_KEY);
+        }
+        catch (IllegalArgumentException e) {
+            // jwtStr가 null이거나 길이가 0인 경우
+            logger.error("Exception! 'rawUserJwt' is null or zero length! (rawUserJwt: " + rawUserJwt + ")");
+            return ApiResult.make(false, "userJwt값이 비었습니다.");
+        }
+        catch (MalformedJwtException e) {
+            // jwtStr가 JWT토큰 포멧이 아닌경우
+            logger.error("Exception! 'rawUserJwt' type is NOT JWT! (rawUserJwt: " + rawUserJwt + ")");
+            return ApiResult.make(false, "userJwt가 올바른 JWT포멧이 아닙니다.");
+        }
+        catch (ExpiredJwtException e){
+            // 토큰 유효기간이 만료된 경우
+            logger.error("Exception! JWT is EXPIRED! (rawUserJwt: " + rawUserJwt + ")");
+            return ApiResult.make(false, "userJwt가 만료되었습니다.");
+        }
+        catch (SignatureException e) {
+            // 서명검사 오류가 발생한 경우
+            logger.error("Exception! JWT is SIGN UNVALID! (rawUserJwt: " + rawUserJwt + ")");
+            return ApiResult.make(false, "userJwt의 서명이 올바르지 않습니다.");
+        }
+        catch (MissingClaimException e) {
+            // jwtRequried의 key값이 Claims에 존재하지 않는 경우
+            logger.error("Exception! JWT requried claim NOT exist! (rawUserJwt: " + rawUserJwt + ")");
+            return ApiResult.make(false, "userJwt 바디에 필요한 필수값이 비었습니다.");
+        }
+        catch (IncorrectClaimException e) {
+            // jwtRequried의 key값에 해당하는 value가 불일치
+            logger.error("Exception! JWT requried claim NOT matched! (rawUserJwt: " + rawUserJwt + ")");
+            return ApiResult.make(false, "userJwt 바디에 필요한 필수값 데이터가 올바르지 않습니다.");
+        }
+        catch (Exception e) {
+            logger.error("Exception while parsing JWT!", e);
+            return ApiResult.make(false, "JWT파싱중 오류가 발생했습니다.");
+        }
 
         if (userJwtMap == null) {
             logger.error("'userJwtMap' is null!");

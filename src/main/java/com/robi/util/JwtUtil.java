@@ -87,51 +87,41 @@ public class JwtUtil {
      * @return 생성된 JWT 문자열.
      * @see https://github.com/jwtk/jjwt
      */
-    public static Map<String, Object> parseJwt(String jwtStr, Map<String, Object> jwtReqClaims, Key signKey)
-            throws IllegalArgumentException, MalformedJwtException, ExpiredJwtException,
-            SignatureException, MissingClaimException, IncorrectClaimException {
-        try {
-            // 파라미터 검사
-            if (jwtStr == null || jwtStr.length() == 0) {
-                logger.error("'jwtStr' is null or zero length! (jwtStr:" + jwtStr + ")");
-                return null;
-            }
-            
-            // JWT 파싱 시작
-            JwtParser jwtParser = Jwts.parser();
-            
-            // Header, Claims 필수값 검사
-            if (jwtReqClaims != null) {
-                for (String key : jwtReqClaims.keySet()) {
-                    jwtParser = jwtParser.require(key, jwtReqClaims.get(key));
-                }
-            }
-            
-            // 서명키 등록
-            if (signKey != null) {
-                jwtParser = jwtParser.setSigningKey(signKey);
-            }
-            
-            // Claims 추출
-            Jws<Claims> jws = jwtParser.parseClaimsJws(jwtStr);
-            Claims claims = jws.getBody();
-
-            // HashMap에 담아서 반환
-            Map<String, Object> rtClaimsMap = new HashMap<String, Object>();
-            
-            for (String key : claims.keySet()) {
-                rtClaimsMap.put(key, claims.get(key));
-            }
-            
-            return rtClaimsMap;
-        }
-        catch (MalformedJwtException | ExpiredJwtException | SignatureException | 
-                MissingClaimException | IncorrectClaimException | IllegalArgumentException e) {
-            throw e;
-        }
-        catch (Exception e) {
-            logger.error("Util Exception!", e);
+    public static Map<String, Object> parseJwt(String jwtStr, Map<String, Object> jwtReqClaims, Key signKey) 
+        throws IllegalArgumentException, MalformedJwtException, ExpiredJwtException,
+               SignatureException, MissingClaimException, IncorrectClaimException {
+        // 파라미터 검사
+        if (jwtStr == null || jwtStr.length() == 0) {
+            logger.error("'jwtStr' is null or zero length! (jwtStr:" + jwtStr + ")");
             return null;
         }
+        
+        // JWT 파싱 시작
+        JwtParser jwtParser = Jwts.parser();
+        
+        // Header, Claims 필수값 검사
+        if (jwtReqClaims != null) {
+            for (String key : jwtReqClaims.keySet()) {
+                jwtParser = jwtParser.require(key, jwtReqClaims.get(key));
+            }
+        }
+        
+        // 서명키 등록
+        if (signKey != null) {
+            jwtParser = jwtParser.setSigningKey(signKey);
+        }
+        
+        // Claims 추출
+        Jws<Claims> jws = jwtParser.parseClaimsJws(jwtStr);
+        Claims claims = jws.getBody();
+
+        // HashMap에 담아서 반환
+        Map<String, Object> rtClaimsMap = new HashMap<String, Object>();
+        
+        for (String key : claims.keySet()) {
+            rtClaimsMap.put(key, claims.get(key));
+        }
+        
+        return rtClaimsMap;
     }
 }
