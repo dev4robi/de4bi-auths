@@ -75,6 +75,12 @@ public class UsersService {
         USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtLifeMinuteDefault")) * 60000L;
     }
 
+    /**
+     * <p>DB에서 value값을 key로 사용하여 회원을 조회합니다.</p>
+     * @param keyName : "email" || "id" || "nickname"
+     * @param value : keyName에 해당하는 값
+     * @return 존재하면 {@link Users} 'selectedUser'와 true, 존재하지 않으면 false
+     */
     public ApiResult selectUserByKey(String keyName, String value) {
         // Param check
         ApiResult paramValidationRst = null;
@@ -127,6 +133,16 @@ public class UsersService {
         return ApiResult.make(true, null, MapUtil.toMap("selectedUser", selectedUser));
     }
 
+    /**
+     * <p>DB에 회원을 추가합니다.</p>
+     * @param email : 회원 이메일 (UK)
+     * @param password : 비밀번호 (NN)
+     * @param nickname : 닉네임 (UK)
+     * @param fullName : 이름 (NN)
+     * @param gender : 성별 (NN)
+     * @param dateOfBirth : 생년월일 (NN)
+     * @return 추가성공시 true, 실패시 false
+     */
     public ApiResult insertUser(String email, String password, String nickname,
                                 String fullName, String gender, Long dateOfBirth) {
         // Param check
@@ -192,6 +208,16 @@ public class UsersService {
         return ApiResult.make(true);
     }
 
+    /**
+     * <p>DB에 회원정보를 갱신합니다.</p>
+     * @param userJwt : 회원 JWT
+     * @param password : 비밀번호 (NN)
+     * @param nickname : 닉네임 (UK)
+     * @param fullName : 이름 (NN)
+     * @param gender : 성별 (NN)
+     * @param dateOfBirth : 생년월일 (NN)
+     * @return 갱신성공시 true, 실패시 false
+     */
     @Transactional
     public ApiResult updateUser(String userJwt, String password, String nickname,
                                 String fullName, String gender, Long dateOfBirth) {
@@ -271,6 +297,11 @@ public class UsersService {
         return ApiResult.make(true);
     }
 
+    /**
+     * <p>DB에 회원정보를 삭제(갱신)합니다.</p>
+     * @param userJwt : 회원 JWT
+     * @return 삭제성공시 true, 실패시 false
+     */
     @Transactional
     public ApiResult deleteUser(String userJwt) {
         final String email = "robi02@naver.com"; // @@ jwt분석구문 추후 추가!!
@@ -314,7 +345,11 @@ public class UsersService {
         return ApiResult.make(true);
     }
 
-    // 비밀번호에 솔트해싱 수행
+    /**
+     * <p>회원의 비밀번호를 SALT-HASHING 수행합니다.</p>
+     * @param password : 사용자로부터 전달받은 RAW비밀번호
+     * @return 해싱성공시 {@link String} 'password'값과 true, 실패시 false
+     */
     private ApiResult hashingPassword(String password) {
         try {
             byte[] hashingPassword = CipherUtil.hashing(CipherUtil.SHA256, password.getBytes(), env.getProperty("users.password.salt").getBytes());
@@ -334,6 +369,11 @@ public class UsersService {
         return ApiResult.make(true, null, MapUtil.toMap("password", password));
     }
 
+    /**
+     * <p>회원이 정상적으로 서비스사용 권한이 있는지 확인합니다.</p>
+     * @param valiateTargetUser : 확인할 회원 객체
+     * @return 권한확인 성공시 true, 실패시 false
+     */
     public ApiResult validateUserServiceAccesibble(Users valiateTargetUser) {
         // 파라미터 검사
         if (valiateTargetUser == null) {
@@ -371,6 +411,14 @@ public class UsersService {
         return ApiResult.make(true);
     }
 
+    /**
+     * <p>회원 JWT를 발급합니다.</p>
+     * @param audience : 발급요청한 대상(서비스)의 식별자
+     * @param email : 회원 이메일
+     * @param password : 회원 비밀번호
+     * @param duration : 토큰 지속시간 (분 단위)
+     * @return 발급 성공시 {@link String} 'userJwt'값과 true, 실패시 false
+     */
     public ApiResult issueUserJwt(String audience, String email, String password, Long duration) {
         // 파라미터 검사
         ApiResult paramRst = null;
@@ -473,6 +521,12 @@ public class UsersService {
         return ApiResult.make(true, MapUtil.toMap("userJwt", base64UserJwt));
     }
 
+    /**
+     * <p>발급한 회원 JWT를 검증합니다.</p>
+     * @param audience : 검증요청한 대상(서비스)의 식별자 (발급요청자와 일치해야 함)
+     * @param userJwt : 검증할 회원 JWT
+     * @return 검증 성공시 true, 실패시 false
+     */
     public ApiResult validateUserJwt(String audience, String userJwt) {
         // 파라미터 검사
         ApiResult paramRst = null;
