@@ -45,15 +45,4 @@ public class UsersApiController {
     public Map<String, Object> userApiGetJwt(@RequestBody ValidateUserJwtVO validateUserJwtVo) {
         return usersSvc.validateUserJwt(validateUserJwtVo.getAudience(), validateUserJwtVo.getUserJwt()).toMap();
     }
-
-/*
-    @RequestMapping(value="/users/api/jwt", method={ RequestMethod.GET, RequestMethod.POST })
-    public Map<String, Object> userApiGetJwt(
-        @ModelAttribute("audience") String audience,
-        @ModelAttribute("email") String email,
-        @ModelAttribute("password") String password,
-        @ModelAttribute("duration") String duration) {
-        return usersSvc.issueUserJwt(audience, email, password, Long.parseLong(duration)).toMap();
-    }
-*/
 }

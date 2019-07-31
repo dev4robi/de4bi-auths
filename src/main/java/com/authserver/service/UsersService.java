@@ -41,6 +41,7 @@ public class UsersService {
     @Autowired private UsersRepository usersRepo;
     @Autowired private Environment env;
 
+    private String AUTHS_AUDIENCE_NAME = null;
     private String USER_JWT_VERSION = null;
     private Key USER_JWT_SIGN_KEY = null;
     private SecretKeySpec USER_JWT_AES_KEY = null;
@@ -48,6 +49,9 @@ public class UsersService {
 
     @PostConstruct
     public void postConstruct() {
+        // AUTHS_AUDIENCE_NAME
+        AUTHS_AUDIENCE_NAME = env.getProperty("auths.audienceName");
+
         // USER_JWT_VERSION
         USER_JWT_VERSION = env.getProperty("userJwt.jwtVersion");
 
@@ -221,9 +225,16 @@ public class UsersService {
     @Transactional
     public ApiResult updateUser(String userJwt, String password, String nickname,
                                 String fullName, String gender, Long dateOfBirth) {
-        final String email = "robi9202@gmail.com"; // @@ jwt분석구문 추후 추가!!
+        // Validate UserJwt
+        ApiResult userJwtValidateRst = validateUserJwt(AUTHS_AUDIENCE_NAME, userJwt);
+
+        if (userJwtValidateRst == null || !userJwtValidateRst.getResult()) {
+            logger.error("'userJwtValidateRst' is null or false!");
+            return userJwtValidateRst;
+        }
 
         // Param check
+        String email = userJwtValidateRst.getDataAsStr("email");
         ApiResult paramValidationRst = null;
 
         if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
@@ -304,9 +315,16 @@ public class UsersService {
      */
     @Transactional
     public ApiResult deleteUser(String userJwt) {
-        final String email = "robi02@naver.com"; // @@ jwt분석구문 추후 추가!!
+        // Validate UserJwt
+        ApiResult userJwtValidateRst = validateUserJwt(AUTHS_AUDIENCE_NAME, userJwt);
+
+        if (userJwtValidateRst == null || !userJwtValidateRst.getResult()) {
+            logger.error("'userJwtValidateRst' is null or false!");
+            return userJwtValidateRst;
+        }
 
         // Param check
+        String email = userJwtValidateRst.getDataAsStr("email");
         ApiResult paramValidationRst = null;
 
         if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
@@ -492,7 +510,7 @@ public class UsersService {
         String rawUserJwt = JwtUtil.buildJwt(MapUtil.toMap("ver", USER_JWT_VERSION),
                                              MapUtil.toMap("sub", "dev4robi-user-jwt",
                                                            "aud", audience,
-                                                           "iat", "dev4robi-auths",
+                                                           "iat", AUTHS_AUDIENCE_NAME,
                                                            "exp", new Date(jwtExpiredTimeMs),
                                                            "email", email),
                                              USER_JWT_SIGN_KEY);
@@ -525,7 +543,7 @@ public class UsersService {
      * <p>발급한 회원 JWT를 검증합니다.</p>
      * @param audience : 검증요청한 대상(서비스)의 식별자 (발급요청자와 일치해야 함)
      * @param userJwt : 검증할 회원 JWT
-     * @return 검증 성공시 true, 실패시 false
+     * @return 검증 성공시 {@link String} 'email'값과 true, 실패시 false
      */
     public ApiResult validateUserJwt(String audience, String userJwt) {
         // 파라미터 검사
@@ -634,6 +652,6 @@ public class UsersService {
 
         // 검증 성공
         logger.info("'UserJwt '" + userJwt + "' for '" + audience + "' is VALIDATED! (email:" + email + ")");
-        return ApiResult.make(true);
+        return ApiResult.make(true, MapUtil.toMap("email", email));
     }
 }
