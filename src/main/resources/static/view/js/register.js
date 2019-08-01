@@ -7,7 +7,7 @@ $(document).ready(function(){
             return;
         }
 
-        AJAX.apiCall('GET', '/users/nickname/' + userNickname + '/duplicated', null, null,
+        AJAX.apiCall('GET', ('/users/api/duplicated/' + userNickname), null, null,
             // Always    
             function() {
                 // ...
@@ -147,7 +147,7 @@ function checkAndupdateFormDataUI() {
 
     var postData = {
         'email' : email,
-        'password' : password,
+        'password' : SHA256(password + $('#clientSalt').val()),
         'passwordCheck' : passwordCheck,
         'nickname' : nickname,
         'fullName' : fullName,

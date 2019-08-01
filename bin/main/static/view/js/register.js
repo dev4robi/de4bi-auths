@@ -7,9 +7,7 @@ $(document).ready(function(){
             return;
         }
 
-        var checkDuplicationApiURL = '/users/api/duplicated/' + userNickname;
-
-        AJAX.apiCall('GET', checkDuplicationApiURL, null, null,
+        AJAX.apiCall('GET', ('/users/api/duplicated/' + userNickname), null, null,
             // Always    
             function() {
                 // ...
@@ -149,7 +147,7 @@ function checkAndupdateFormDataUI() {
 
     var postData = {
         'email' : email,
-        'password' : password,
+        'password' : SHA256(password + $('#clientSalt').val()),
         'passwordCheck' : passwordCheck,
         'nickname' : nickname,
         'fullName' : fullName,

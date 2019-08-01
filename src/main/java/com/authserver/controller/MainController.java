@@ -10,6 +10,7 @@ import com.robi.util.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,10 +25,16 @@ public class MainController {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     private GoogleOAuthService googleOauthSvc;
+    private Environment env;
 
     @RequestMapping("/main")
-    public ModelAndView mainPage() {
+    public ModelAndView mainPage(
+        @RequestParam(name = "redirectionPageUrl", required = false) String redirectionPageUrl)
+    {
         Map<String, Object> modelMap = new HashMap<String, Object>();
+
+        // Extra Datas
+        modelMap.put("redirectionPageUrl", redirectionPageUrl);
 
         // - Google Oauth ---------------------------------------------------------------
         ApiResult codeUrlRst = googleOauthSvc.makeCodeUrl();
@@ -67,7 +74,8 @@ public class MainController {
     @RequestMapping("/register")
     public ModelAndView registerPage(
         @RequestParam String email, @RequestParam String sign, @RequestParam String nonce) {
-        return new ModelAndView("register", MapUtil.toMap("email", email, "sign", sign, "nonce", nonce));
+        return new ModelAndView("register", MapUtil.toMap("email", email, "sign", sign, "nonce", nonce,
+                                                          "clientSalt", env.getProperty("users.password.clientSalt")));
     }
 
     @RequestMapping("/errors")

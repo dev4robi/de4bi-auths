@@ -41,14 +41,19 @@ public class UsersService {
     @Autowired private UsersRepository usersRepo;
     @Autowired private Environment env;
 
+    private byte[] USER_PASSWORD_SERVER_SALT = null;
     private String AUTHS_AUDIENCE_NAME = null;
     private String USER_JWT_VERSION = null;
     private Key USER_JWT_SIGN_KEY = null;
     private SecretKeySpec USER_JWT_AES_KEY = null;
     private Long USER_JWT_DEFAULT_DURATION_MS = null;
+    private Long USER_JWT_REQUEST_LIMIT_MS = null;
 
     @PostConstruct
     public void postConstruct() {
+        // USER_PASSWORD_SERVER_SALT
+        USER_PASSWORD_SERVER_SALT = env.getProperty("users.password.serverSalt").getBytes();
+
         // AUTHS_AUDIENCE_NAME
         AUTHS_AUDIENCE_NAME = env.getProperty("auths.audienceName");
 
@@ -77,6 +82,9 @@ public class UsersService {
 
         // USER_JWT_DEFAULT_DURATION_MS
         USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtLifeMinuteDefault")) * 60000L;
+        
+        // USER_JWT_REQUEST_LIMIT_MS
+        USER_JWT_REQUEST_LIMIT_MS = Long.parseLong(env.getProperty("userJwt.issueRequestLimitMs"));
     }
 
     /**
@@ -153,26 +161,32 @@ public class UsersService {
         ApiResult paramValidationRst = null;
 
         if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+            logger.error("'email' vaildation failed!");
             return paramValidationRst;
         }
 
-        if (!(paramValidationRst = ValidatorUtil.strLen("password", password, 8, 32)).getResult()) {
+        if (!(paramValidationRst = ValidatorUtil.strLen("password", password, 8, 64)).getResult()) {
+            logger.error("'password' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.strLen("nickname", nickname, 4, 16)).getResult()) {
+            logger.error("'nickname' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.strLen("fullName", fullName, 2, 64)).getResult()) {
+            logger.error("'fullName' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.isGender(gender)).getResult()) {
+            logger.error("'gender' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.arthimatic("dateOfBirth", dateOfBirth, 0L, Long.MAX_VALUE)).getResult()) {
+            logger.error("'dateOfBirth' vaildation failed!");
             return paramValidationRst;
         }
 
@@ -238,26 +252,32 @@ public class UsersService {
         ApiResult paramValidationRst = null;
 
         if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+            logger.error("'email' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.strLen("password", password, 8, 32)).getResult()) {
+            logger.error("'password' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.strLen("nickname", nickname, 4, 16)).getResult()) {
+            logger.error("'nickname' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.strLen("fullName", fullName, 2, 64)).getResult()) {
+            logger.error("'fullName' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.isGender(gender)).getResult()) {
+            logger.error("'gender' vaildation failed!");
             return paramValidationRst;
         }
 
         if (!(paramValidationRst = ValidatorUtil.arthimatic("dateOfBirth", dateOfBirth, 0L, Long.MAX_VALUE)).getResult()) {
+            logger.error("'dateOfBirth' vaildation failed!");
             return paramValidationRst;
         }
 
@@ -309,6 +329,37 @@ public class UsersService {
     }
 
     /**
+     * <p>DB에 회원의 마지막 로그인 시간을 갱신합니다.</p>
+     * @param selectedUser : selectUserByKey()로 선택된 회원 객체
+     * @param lastLoginTime : 마지막으로 로그인한 시간 (NN)
+     * @return 갱신성공시 true, 실패시 false
+     */
+    @Transactional
+    public ApiResult updateUserLastLoginTime(Users selectedUser, long lastLoginTime) {
+        if (selectedUser == null) {
+            logger.error("'selectedUser' is null!");
+            return ApiResult.make(false);
+        }
+
+        // JPA - update users
+        try {
+            selectedUser.setLastLoginTime(lastLoginTime);
+            
+            if (usersRepo.save(selectedUser) == null) {
+                logger.error("save() for update return null!");
+                throw new Exception();
+            }
+        }
+        catch (Exception e) {
+            logger.error("JPA Exception!", e);
+            return ApiResult.make(false, "회원정보 DB수정중 오류가 발생했습니다.");
+        }
+
+        logger.info("JPA - update success! (selectedUser:" + selectedUser.toString() + ")");
+        return ApiResult.make(true);
+    }
+
+    /**
      * <p>DB에 회원정보를 삭제(갱신)합니다.</p>
      * @param userJwt : 회원 JWT
      * @return 삭제성공시 true, 실패시 false
@@ -328,6 +379,7 @@ public class UsersService {
         ApiResult paramValidationRst = null;
 
         if (!(paramValidationRst = ValidatorUtil.isEmail(email)).getResult()) {
+            logger.error("'email' validation failed!");
             return paramValidationRst;
         }
 
@@ -364,20 +416,34 @@ public class UsersService {
     }
 
     /**
-     * <p>회원의 비밀번호를 SALT-HASHING 수행합니다.</p>
-     * @param password : 사용자로부터 전달받은 RAW비밀번호
+     * <p>회원의 비밀번호를 SALT-HASHING 수행합니다.
+     * <pre>해싱 알고리즘은 다음과 같습니다.
+     *  1) Client로부터 'users.password.clientSalt' SALT-SHA256해싱된 'passwordLv1' 획득
+     *     (http사용 시 최소한의 방어를 위함)
+     *  2) Server에서 'passwordLv1'값에 'users.password.serverSalt'값을 Salt로 사용한 SALT-SHA256 'passwordLv2' 생성
+     *  3) Server에서 'passwordLv1'값에 'passwordLv2'값을 Salt로 사용한 SALT-SHA256 'password' 생성 (최종)</pre></p>
+     * @param password : 사용자로부터 전달받은 해싱된 비밀번호
      * @return 해싱성공시 {@link String} 'password'값과 true, 실패시 false
      */
-    private ApiResult hashingPassword(String password) {
-        try {
-            byte[] hashingPassword = CipherUtil.hashing(CipherUtil.SHA256, password.getBytes(), env.getProperty("users.password.salt").getBytes());
+    private ApiResult hashingPassword(String passwordLv1) {
+        String password = null;
 
-            if (hashingPassword == null) {
-                logger.error("'hashingPassword' is null!");
+        try {
+            byte[] passwordLv2Bytes = CipherUtil.hashing(CipherUtil.SHA256, passwordLv1.getBytes(), USER_PASSWORD_SERVER_SALT);
+
+            if (passwordLv2Bytes == null) {
+                logger.error("'passwordLv2Bytes' is null!");
                 throw new Exception();
             }
 
-            password = Hex.encodeHexString(hashingPassword);
+            byte[] passwordBytes = CipherUtil.hashing(CipherUtil.SHA256, passwordLv1.getBytes(), passwordLv2Bytes);
+
+            if (passwordBytes == null) {
+                logger.error("'passwordBytes' is null!");
+                throw new Exception();
+            }
+
+            password = Hex.encodeHexString(passwordBytes);
         }
         catch (Exception e) {
             logger.error("Exception while password hashing!", e);
@@ -437,19 +503,23 @@ public class UsersService {
      * @param duration : 토큰 지속시간 (분 단위)
      * @return 발급 성공시 {@link String} 'userJwt'값과 true, 실패시 false
      */
+    @Transactional
     public ApiResult issueUserJwt(String audience, String email, String password, Long duration) {
         // 파라미터 검사
         ApiResult paramRst = null;
 
         if (!(paramRst = ValidatorUtil.nullOrZeroLen("audience", audience)).getResult()) {
+            logger.error("'audience' validation failed!");
             return paramRst;
         }
 
         if (!(paramRst = ValidatorUtil.isEmail(email)).getResult()) {
+            logger.error("'email' validation failed!");
             return paramRst;
         }
 
         if (!(paramRst = ValidatorUtil.nullOrZeroLen("password", password)).getResult()) {
+            logger.error("'password' validation failed!");
             return paramRst;
         }
         
@@ -468,16 +538,32 @@ public class UsersService {
             return ApiResult.make(false, "회원 정보를 찾을 수 없습니다.");
         }
 
+        // 마지막 발급시간 검사
+        final Users selectedUser = (Users) selectUserRst.getData("selectedUser");
+        long curTime = System.currentTimeMillis();
+        long lastLoginTryDeltaMs =  curTime - selectedUser.getLastLoginTime();
+
+        if (lastLoginTryDeltaMs < USER_JWT_REQUEST_LIMIT_MS) {
+            logger.error("'userJwt' request too fast! (lastLoginTryDeltaMs: " + lastLoginTryDeltaMs + ")");
+            return ApiResult.make(false, "너무 짧은 주기로 userJwt를 요청하고 있습니다.");
+        }
+
+        // 마지막 로그인시간 갱신
+        ApiResult usersUpdateRst = updateUserLastLoginTime(selectedUser, curTime);
+
+        if (usersUpdateRst == null || !usersUpdateRst.getResult()) {
+            logger.error("'usersUpdateRst' is null or false! (usersUpdateRst: " + usersUpdateRst + ")");
+            return usersUpdateRst;
+        }
+
         // 비밀번호 검사
         ApiResult pwHashingRst = hashingPassword(password);
+        String hashedPassword = pwHashingRst.getDataAsStr("password");
 
         if (pwHashingRst == null || !pwHashingRst.getResult()) {
             logger.error("Fail to hashing request password!");
             return pwHashingRst;
         }
-
-        Users selectedUser = (Users) selectUserRst.getData("selectedUser");
-        String hashedPassword = pwHashingRst.getDataAsStr("password");
 
         if (!selectedUser.getPassword().equals(hashedPassword)) {
             logger.error("Password NOT equals!");
@@ -550,10 +636,12 @@ public class UsersService {
         ApiResult paramRst = null;
 
         if (!(paramRst = ValidatorUtil.nullOrZeroLen("audience", audience)).getResult()) {
+            logger.error("'audience' validation failed!");
             return paramRst;
         }
 
         if (!(paramRst = ValidatorUtil.nullOrZeroLen("userJwt", userJwt)).getResult()) {
+            logger.error("'userJwt' validation failed!");
             return paramRst;
         } 
 

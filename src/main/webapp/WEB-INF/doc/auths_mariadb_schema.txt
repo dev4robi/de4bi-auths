@@ -26,5 +26,3 @@ CREATE TABLE `db_auths_test`.`users` (
   UNIQUE INDEX `users_uk_idx_email` (`email` ASC),
   UNIQUE INDEX `users_uk_idx_nickname` (`nickname` ASC)
 );
-
--- 테스트용 관리자 계정

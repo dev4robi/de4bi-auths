@@ -96,5 +96,7 @@
 			</c:choose>
 		</div>
 	</div>
+	<!-- Hidden params -->
+	<input type="hidden" id="input_redirectionPageUrl" value="${redirectionPageUrl}">
 </body>
 </html>

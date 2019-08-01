@@ -109,5 +109,7 @@
     	<input class="form-check-input" type="hidden" name="sign" value="${sign}" id="input_sign">
 		<input class="form-check-input" type="hidden" name="nonce" value="${nonce}" id="input_nonce">
 	</form>
+	<!-- Hidden datas -->
+	<input type="hidden" value="${clientSalt}" id="clientSalt">
 </body>
 </html>
