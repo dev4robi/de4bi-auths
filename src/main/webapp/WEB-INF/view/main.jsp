@@ -18,6 +18,8 @@
 	<!-- fontawesome 5.8.1 -->
 	<link rel="stylesheet" href="/common/lib/fontawesome-5.8.1/css/fontawesome-5.8.1.css">
 	<script type="text/javascript" src="/common/lib/fontawesome-5.8.1/js/fontawesome-5.8.1.js"></script>
+	<!-- common.js -->
+	<script type="text/javascript" src="/common/js/common.js?ver<%=System.currentTimeMillis()%>"></script>
 	<!-- register.js -->
 	<script type="text/javascript" src="/view/js/main.js?ver<%=System.currentTimeMillis()%>"></script>
 </head>
@@ -33,29 +35,27 @@
 	<hr>
 	<!-- Signin form -->
 	<div class="row pt-3"></div>
-	<form>
-		<div class="form-row justify-content-around align-items-center">
-			<div class="form-group col-md-10 align-self-center">
-				<label for="inputEmail4">Email</label>
-				<input type="email" class="form-control" id="inputEmail4" placeholder="이메일">
-			</div>
-			<div class="form-group col-md-10 align-self-center">
-				<label for="inputPassword4">Password</label>
-				<input type="password" class="form-control" id="inputPassword4" placeholder="비밀번호">
-			</div>
-			<div class="form-group col-md-10 align-self-center">
-				<button type="submit" class="btn btn-primary w-100">로그인</button>
-			</div>
-			<div class="form-group col-md-10 align-self-center">
-				<div class="form-check">
-					<input class="form-check-input" type="checkbox" id="gridCheck">
-					<label class="form-check-label" for="gridCheck">
-						로그인 유지
-					</label>
-				</div>
+	<div class="form-row justify-content-around align-items-center">
+		<div class="form-group col-md-10 align-self-center">
+			<label for="input_email">Email</label>
+			<input type="email" class="form-control" id="input_email" placeholder="이메일">
+		</div>
+		<div class="form-group col-md-10 align-self-center">
+			<label for="input_password">Password</label>
+			<input type="password" class="form-control" id="input_password" placeholder="비밀번호">
+		</div>
+		<div class="col-md-10 align-self-center">
+			<button type="submit" class="btn btn-primary w-100" id="button_login">로그인</button>
+		</div>
+		<div class="form-group col-md-10 align-self-center">
+			<div class="form-check">
+				<input class="form-check-input" type="checkbox" id="gridCheck">
+				<label class="form-check-label" for="gridCheck">
+					로그인 유지
+				</label>
 			</div>
 		</div>
-	</form>
+	</div>
 	<!-- Social login -->
 	<div class="row justify-content-around align-items-center">
 		<div class="col-md-10 text-center align-self-center">
@@ -97,6 +97,9 @@
 		</div>
 	</div>
 	<!-- Hidden params -->
+	<input type="hidden" id="input_clientSalt" value="${clientSalt}">
+	<input type="hidden" id="input_audience" value="${audience}">
+	<input type="hidden" id="input_duration" value="${duration}">
 	<input type="hidden" id="input_redirectionPageUrl" value="${redirectionPageUrl}">
 </body>
 </html>

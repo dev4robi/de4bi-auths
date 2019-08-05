@@ -191,7 +191,7 @@ public class UsersService {
         }
 
         // Password salting and hashing
-        ApiResult hashingPasswordRst = hashingPassword(password);
+        ApiResult hashingPasswordRst = hashingPassword(email, password);
 
         if (!hashingPasswordRst.getResult()) {
             logger.error("'hashingPasswordRst' is false!");
@@ -282,7 +282,7 @@ public class UsersService {
         }
 
         // Password salting and hashing
-        ApiResult hashingPasswordRst = hashingPassword(password);
+        ApiResult hashingPasswordRst = hashingPassword(email, password);
 
         if (!hashingPasswordRst.getResult()) {
             logger.error("'hashingPasswordRst' is false!");
@@ -420,23 +420,16 @@ public class UsersService {
      * <pre>해싱 알고리즘은 다음과 같습니다.
      *  1) Client로부터 'users.password.clientSalt' SALT-SHA256해싱된 'passwordLv1' 획득
      *     (http사용 시 최소한의 방어를 위함)
-     *  2) Server에서 'passwordLv1'값에 'users.password.serverSalt'값을 Salt로 사용한 SALT-SHA256 'passwordLv2' 생성
-     *  3) Server에서 'passwordLv1'값에 'passwordLv2'값을 Salt로 사용한 SALT-SHA256 'password' 생성 (최종)</pre></p>
+     *  2) Server에서 'email' + 'passwordLv1' 값에 'users.password.serverSalt'값을 Salt로 사용한 SALT-SHA256 'password' 생성</p></pre>
      * @param password : 사용자로부터 전달받은 해싱된 비밀번호
      * @return 해싱성공시 {@link String} 'password'값과 true, 실패시 false
      */
-    private ApiResult hashingPassword(String passwordLv1) {
+    private ApiResult hashingPassword(String email, String passwordLv1) {
         String password = null;
 
         try {
-            byte[] passwordLv2Bytes = CipherUtil.hashing(CipherUtil.SHA256, passwordLv1.getBytes(), USER_PASSWORD_SERVER_SALT);
-
-            if (passwordLv2Bytes == null) {
-                logger.error("'passwordLv2Bytes' is null!");
-                throw new Exception();
-            }
-
-            byte[] passwordBytes = CipherUtil.hashing(CipherUtil.SHA256, passwordLv1.getBytes(), passwordLv2Bytes);
+            String emailWithPasswordLv1 = email + passwordLv1;
+            byte[] passwordBytes = CipherUtil.hashing(CipherUtil.SHA256, emailWithPasswordLv1.getBytes(), USER_PASSWORD_SERVER_SALT);
 
             if (passwordBytes == null) {
                 logger.error("'passwordBytes' is null!");
@@ -557,7 +550,7 @@ public class UsersService {
         }
 
         // 비밀번호 검사
-        ApiResult pwHashingRst = hashingPassword(password);
+        ApiResult pwHashingRst = hashingPassword(email, password);
         String hashedPassword = pwHashingRst.getDataAsStr("password");
 
         if (pwHashingRst == null || !pwHashingRst.getResult()) {

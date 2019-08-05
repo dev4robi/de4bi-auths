@@ -29,12 +29,17 @@ public class MainController {
 
     @RequestMapping("/main")
     public ModelAndView mainPage(
+        @RequestParam(name = "audience", required = false) String audience,
+        @RequestParam(name = "duration", required = false) String duration,
         @RequestParam(name = "redirectionPageUrl", required = false) String redirectionPageUrl)
     {
         Map<String, Object> modelMap = new HashMap<String, Object>();
 
         // Extra Datas
+        modelMap.put("audience", audience);
+        modelMap.put("duration", duration);
         modelMap.put("redirectionPageUrl", redirectionPageUrl);
+        modelMap.put("clientSalt", env.getProperty("users.password.clientSalt"));
 
         // - Google Oauth ---------------------------------------------------------------
         ApiResult codeUrlRst = googleOauthSvc.makeCodeUrl();

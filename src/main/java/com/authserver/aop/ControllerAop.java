@@ -31,7 +31,7 @@ public class ControllerAop {
 
     @Around("execution(* com.authserver.controller.restcontroller..*.*(..))") // REST controller(CTR) AoP
     public Object aroundRestController(ProceedingJoinPoint pjp) {
-        // Logger setting with issue 'tId' (A.K.A 'trace id')
+        // Logger setting with issuing 'tId' (A.K.A 'trace Id')
         final long beginTime = System.currentTimeMillis();
         final String oldLogLayer = LogUtil.changeLogLayer(LogUtil.LAYER_CTR);
         final String tId = RandomUtil.genRandomStr(12, RandomUtil.ALPHABET | RandomUtil.NUMERIC);

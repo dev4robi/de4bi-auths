@@ -22,7 +22,7 @@ public class ServiceAop {
 
     @Around("execution(* com.authserver.service..*.*(..))") // Service(SVC) AoP
     public Object aroundService(ProceedingJoinPoint pjp) {
-        // Logger setting with issue 'tId' (A.K.A 'trace id')
+        // Logger setting with issued 'tId' (A.K.A 'trace Id')
         final long beginTime = System.currentTimeMillis();
         final String oldLogLayer = LogUtil.changeLogLayer(LogUtil.LAYER_SVC);
         

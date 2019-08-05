@@ -15,7 +15,7 @@
 | Default Request Header  :                                                                      |
 | Default Request Body    :                                                                      |
 | Default Response Header :                                                                      |
-| Default Response Body   : { "tid", "result_code", "result_msg", "result_data" }                |
+| Default Response Body   : { "tid", "result_code", "result_message", "result_data" }            |
 +------------------------------------------------------------------------------------------------+
 
 +------------------------------------------------------------------------------------------------+

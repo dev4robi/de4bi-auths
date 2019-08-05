@@ -37,6 +37,7 @@ public class UsersApiController {
 
     @PostMapping("/users/api/jwt/issue")
     public Map<String, Object> userApiGetJwt(@RequestBody IssueUserJwtVO issueUserJwtVo) {
+        logger.info("'issueUserJwtVo' : " + issueUserJwtVo.toString());
         return usersSvc.issueUserJwt(issueUserJwtVo.getAudience(), issueUserJwtVo.getEmail(),
                                      issueUserJwtVo.getPassword(), issueUserJwtVo.getDuration()).toMap();
     }

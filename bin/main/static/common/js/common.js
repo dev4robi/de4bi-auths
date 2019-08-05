@@ -48,16 +48,15 @@ var AJAX = {
             return null;
         }
 
-        if (!key) {
-            console.log("Parameter 'key' error! (key:" + key + ")");
-            return null;
-        }
-
-        var resultData = apiResult.resultData;
+        var resultData = apiResult.result_data;
 
         if (!resultData) {
             console.log("Parameter 'resultData' error! (resultData:" + resultData + ")");
             return null;
+        }
+
+        if (!key) {
+            return resultData;
         }
 
         return resultData[key];
