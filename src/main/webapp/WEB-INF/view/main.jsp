@@ -33,73 +33,82 @@
 		</div>
 	</div>
 	<hr>
-	<!-- Signin form -->
 	<div class="row pt-3"></div>
-	<div class="form-row justify-content-around align-items-center">
-		<div class="form-group col-md-10 align-self-center">
-			<label for="input_email">Email</label>
-			<input type="email" class="form-control" id="input_email" placeholder="이메일">
-		</div>
-		<div class="form-group col-md-10 align-self-center">
-			<label for="input_password">Password</label>
-			<input type="password" class="form-control" id="input_password" placeholder="비밀번호">
-		</div>
-		<div class="col-md-10 align-self-center">
-			<button type="submit" class="btn btn-primary w-100" id="button_login">로그인</button>
-		</div>
-		<div class="form-group col-md-10 align-self-center">
-			<div class="form-check">
-				<input class="form-check-input" type="checkbox" id="gridCheck">
-				<label class="form-check-label" for="gridCheck">
-					로그인 유지
-				</label>
-			</div>
+	<!-- User info form (when logined) -->
+	<div id="div_userinfo">
+		<div class="form-row justify-content-around align-items-center">
+
 		</div>
 	</div>
-	<!-- Social login -->
-	<div class="row justify-content-around align-items-center">
-		<div class="col-md-10 text-center align-self-center">
-			<h5>또는 소셜 아이디로 가입</h5>
+	<!-- Signin form -->
+	<div id="div_signin">
+		<!-- login -->
+		<div class="form-row justify-content-around align-items-center">
+			<div class="form-group col-md-10 align-self-center">
+				<label for="input_email">Email</label>
+				<input type="email" class="form-control" id="input_email" placeholder="이메일">
+			</div>
+			<div class="form-group col-md-10 align-self-center">
+				<label for="input_password">Password</label>
+				<input type="password" class="form-control" id="input_password" placeholder="비밀번호">
+			</div>
+			<div class="col-md-10 align-self-center">
+				<button type="submit" class="btn btn-primary w-100" id="button_login">로그인</button>
+			</div>
+			<div class="form-group col-md-10 align-self-center">
+				<div class="form-check">
+					<input class="form-check-input" type="checkbox" id="cb_keep_logged_in">
+					<label class="form-check-label" for="cb_keep_logged_in">
+						로그인 유지
+					</label>
+				</div>
+			</div>
 		</div>
-		<div class="col-md-10 text-center align-self-center">
-			<!-- Reference - https://developers.google.com/identity/protocols/OAuth2WebServer -->
-			<input type="hidden" id="googleLoginUrl" value="${googleLoginUrl}">
-			<c:choose>
-				<c:when test="${not empty googleLoginUrl}">
-					<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin" >Google</button>
-				</c:when>
-				<c:otherwise>
-					<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin" disabled>Google (Comming soon)</button>
-				</c:otherwise>
-			</c:choose>
-		</div>
-		<div class="col-md-10 text-center align-self-center">
-			<input type="hidden" id="kakaoLoginUrl" value="">
-			<c:choose>
-				<c:when test="${not empty kakaoLoginUrl}">
-					<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin">Kakao</button>
-				</c:when>
-				<c:otherwise>
-					<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin" disabled>Kakao (Comming soon)</button>
-				</c:otherwise>
-			</c:choose>
-		</div>
-		<div class="col-md-10 text-center align-self-center">
-			<input type="hidden" id="naverLoginUrl" value="">
-			<c:choose>
-				<c:when test="${not empty naverLoginUrl}">
-					<button type="button" class="btn btn-success w-100" id="btnNaverLogin">Naver</button>
-				</c:when>
-				<c:otherwise>
-					<button type="button" class="btn btn-success w-100" id="btnNaverLogin" disabled>Naver (Comming soon)</button>
-				</c:otherwise>
-			</c:choose>
+		<!-- sing up with social login -->
+		<div class="row justify-content-around align-items-center">
+			<div class="col-md-10 text-center align-self-center">
+				<h5>또는 소셜 아이디로 가입</h5>
+			</div>
+			<div class="col-md-10 text-center align-self-center">
+				<!-- Reference - https://developers.google.com/identity/protocols/OAuth2WebServer -->
+				<input type="hidden" id="googleLoginUrl" value="${googleLoginUrl}">
+				<c:choose>
+					<c:when test="${not empty googleLoginUrl}">
+						<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin" >Google</button>
+					</c:when>
+					<c:otherwise>
+						<button type="button" class="btn btn-danger w-100" id="btnGoogleLogin" disabled>Google (Comming soon)</button>
+					</c:otherwise>
+				</c:choose>
+			</div>
+			<div class="col-md-10 text-center align-self-center">
+				<input type="hidden" id="kakaoLoginUrl" value="">
+				<c:choose>
+					<c:when test="${not empty kakaoLoginUrl}">
+						<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin">Kakao</button>
+					</c:when>
+					<c:otherwise>
+						<button type="button" class="btn btn-warning w-100" id="btnKakaoLogin" disabled>Kakao (Comming soon)</button>
+					</c:otherwise>
+				</c:choose>
+			</div>
+			<div class="col-md-10 text-center align-self-center">
+				<input type="hidden" id="naverLoginUrl" value="">
+				<c:choose>
+					<c:when test="${not empty naverLoginUrl}">
+						<button type="button" class="btn btn-success w-100" id="btnNaverLogin">Naver</button>
+					</c:when>
+					<c:otherwise>
+						<button type="button" class="btn btn-success w-100" id="btnNaverLogin" disabled>Naver (Comming soon)</button>
+					</c:otherwise>
+				</c:choose>
+			</div>
 		</div>
 	</div>
 	<!-- Hidden params -->
 	<input type="hidden" id="input_clientSalt" value="${clientSalt}">
 	<input type="hidden" id="input_audience" value="${audience}">
 	<input type="hidden" id="input_duration" value="${duration}">
-	<input type="hidden" id="input_redirectionPageUrl" value="${redirectionPageUrl}">
+	<input type="hidden" id="input_afterIssueParam" value="${afterIssueParam}">
 </body>
 </html>

@@ -27,18 +27,34 @@ public class MainController {
     private GoogleOAuthService googleOauthSvc;
     private Environment env;
 
+    @RequestMapping("/test")
+    public ModelAndView testPage() {
+        return new ModelAndView("test");
+    }
+
     @RequestMapping("/main")
     public ModelAndView mainPage(
         @RequestParam(name = "audience", required = false) String audience,
         @RequestParam(name = "duration", required = false) String duration,
-        @RequestParam(name = "redirectionPageUrl", required = false) String redirectionPageUrl)
+        @RequestParam(name = "afterIssueParam", required = false) String afterIssueParam)
     {
         Map<String, Object> modelMap = new HashMap<String, Object>();
 
         // Extra Datas
         modelMap.put("audience", audience);
         modelMap.put("duration", duration);
-        modelMap.put("redirectionPageUrl", redirectionPageUrl);
+        /**
+         *  <afterIssueParam>
+         *  1. popup
+         *   ex) afterIssueParam=popup
+         *       -> call parent's javascript function : opener.d4r_login_return(userJwt, keepLoggedIn);
+         *  2. iframe
+         *   ex) afterIssueParam=iframe
+         *       -> call parent's javascript function : $(parent.document).d4r_login_return(userJwt, keepLoggedIn);
+         *  3. redirection
+         *   ex) afterIssueParam=https://www.dev4robi.net?userJwt={userJwt}&keepLoggedIn={true|false}
+         **/
+        modelMap.put("afterIssueParam", afterIssueParam);
         modelMap.put("clientSalt", env.getProperty("users.password.clientSalt"));
 
         // - Google Oauth ---------------------------------------------------------------
