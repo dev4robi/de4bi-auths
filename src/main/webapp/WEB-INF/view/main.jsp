@@ -37,7 +37,89 @@
 	<!-- User info form (when logined) -->
 	<div id="div_userinfo">
 		<div class="form-row justify-content-around align-items-center">
-
+			<div class="form-group col-md-1"></div>
+			<div class="form-group col-md-2 align-self-center">
+				<label for="input_info_id">No.</label>
+				<input type="email" class="form-control" id="input_info_id" placeholder="회원번호" readonly>
+			</div>
+			<div class="form-group col-md-4 align-self-center">
+				<label for="input_info_email">Email</label>
+				<input type="email" class="form-control" id="input_info_email" placeholder="이메일" readonly>
+			</div>
+			<div class="form-group col-md-2 align-self-center">
+				<label for="input_info_access_level">Level</label>
+				<input type="text" class="form-control" id="input_access_level" placeholder="접근 레벨" readonly>
+			</div>
+			<div class="form-group col-md-2 align-self-center">
+				<label for="input_info_status">Status</label>
+				<input type="text" class="form-control" id="input_info_status" placeholder="상태" readonly>
+			</div>
+			<div class="form-group col-md-1"></div>
+		</div>
+		<div class="form-row justify-content-around align-items-center">
+			<div class="form-group col-md-1"></div>
+			<div class="form-group col-md-5 align-self-center">
+				<label for="input_info_password">Password</label>
+				<input type="password" class="form-control" id="input_info_password" placeholder="비밀번호">
+			</div>
+			<div class="form-group col-md-5 align-self-center">
+				<label for="input_info_password_check">Password Check</label>
+				<input type="password" class="form-control" id="input_info_password_check" placeholder="비밀번호 확인">
+			</div>
+			<div class="form-group col-md-1"></div>
+		</div>
+		<div class="form-row justify-content-around align-items-center">
+			<div class="form-group col-md-1"></div>
+			<div class="form-group col-md-3 align-self-center">
+				<label for="input_info_nickname">Nickname</label>
+				<input type="text" class="form-control" id="input_info_nickname" placeholder="닉네임" readonly>
+			</div>
+			<div class="form-group col-md-3 align-self-center">
+				<label for="input_info_full_name">Full Name</label>
+				<input type="text" class="form-control" id="input_info_full_name" placeholder="이름">
+			</div>
+			<div class="form-group col-md-2 align-self-center">
+				<label for="input_info_date_of_birth">Date of birth</label>
+				<input type="text" class="form-control" id="input_info_date_of_birth" placeholder="생년월일">
+			</div>
+			<div class="form-group col-md-2 align-self-center">
+				<label for="input_info_gender">Gender</label>
+				<input type="text" class="form-control" id="input_info_gender" placeholder="성별" readonly>
+			</div>
+			<div class="form-group col-md-1"></div>
+		</div>
+		<div class="form-row justify-content-around align-items-center">
+			<div class="form-group col-md-1"></div>
+			<div class="form-group col-md-4 align-self-center">
+				<label for="input_info_join_time">Join Date</label>
+				<input type="text" class="form-control" id="input_info_join_time" placeholder="가입일자" readonly>
+			</div>
+			<div class="form-group col-md-3 align-self-center">
+				<label for="input_info_last_login_time">Last Login Date</label>
+				<input type="text" class="form-control" id="input_info_last_login_time" placeholder="마지막 로그인 일자" readonly>
+			</div>
+			<div class="form-group col-md-3 align-self-center">
+				<label for="input_info_service_accessible_time">Service Accessible Date</label>
+				<input type="text" class="form-control" id="input_info_service_accessible_time" placeholder="서비스 접근가능 일자" readonly>
+			</div>
+			<div class="form-group col-md-1"></div>
+		</div>
+		<div class="form-row justify-content-around align-items-center pt-3">
+			<div class="col-md-1"></div>
+			<div class="col-md-8 align-self-center">
+				<button type="submit" class="btn btn-success w-100" id="button_info_update">정보 수정</button>
+			</div>
+			<div class="col-md-2 align-self-center">
+				<button type="submit" class="btn btn-secondary w-100" id="button_info_deregister">회원 탈퇴</button>
+			</div>
+			<div class="col-md-1"></div>
+		</div>
+		<div class="form-row justify-content-around align-items-center pt-2">
+			<div class="col-md-1"></div>
+			<div class="col-md-10 align-self-center">
+				<button type="submit" class="btn btn-danger w-100" id="button_info_logout">로그아웃</button>
+			</div>
+			<div class="col-md-1"></div>
 		</div>
 	</div>
 	<!-- Signin form -->
@@ -59,7 +141,7 @@
 				<div class="form-check">
 					<input class="form-check-input" type="checkbox" id="cb_keep_logged_in">
 					<label class="form-check-label" for="cb_keep_logged_in">
-						로그인 유지
+						15일간 로그인 유지
 					</label>
 				</div>
 			</div>

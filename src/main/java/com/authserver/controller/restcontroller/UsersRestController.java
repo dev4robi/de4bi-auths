@@ -45,6 +45,11 @@ public class UsersRestController {
         return usersSvc.selectUserByKey("nickname", nickname).toMap();
     }
 
+    @GetMapping("/users")
+    public Map<String, Object> getUserFromJwt(@RequestHeader String userJwt) {
+        return usersSvc.selectUserByJwt(userJwt).toMap();
+    }
+
     @PostMapping("/users")
     public Map<String, Object> postUsers(@RequestBody PostUsersVO postUsersVO) {
         return usersSvc.insertUser(postUsersVO.getEmail(), postUsersVO.getPassword(), postUsersVO.getNickname(),

@@ -60,6 +60,10 @@ var AJAX = {
         }
 
         return resultData[key];
+    },
+    // Get Result message from API Result
+    getResultMsg : function(apiResult) {
+        return apiResult.result_message;
     }
 }
 

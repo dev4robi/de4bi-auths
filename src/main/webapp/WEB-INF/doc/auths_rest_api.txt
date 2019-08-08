@@ -38,7 +38,19 @@
 | ReqHeader : {"userJwt(R)"}                                                                     |
 | ReqBody   :                                                                                    |
 | ResHeader :                                                                                    |
-| ResBody   : {"email(R)","nickName(R)","fullName(R)","gender(R)","dateOfBirth(R)"}              |                                                                            |
+| ResBody   : {"email","nickName","fullName","gender","dateOfBirth"}                             |
+| Comment   :                                                                                    |
+|                                                                                                |
++------------------------------------------------------------------------------------------------+
+| Access    : Owner                                                                              |
+| Service   : 회원정보 조회 (세부)                                                               |
+| URL       : /users                                                                             |
+| Method    : GET                                                                                |
+| ReqHeader : {"userJwt(R)"}                                                                     |
+| ReqBody   :                                                                                    |
+| ResHeader :                                                                                    |
+| ResBody   : {"id","email","nickName","fullName","gender","dateOfBirth","accessLevel",          |
+|              "status","joinTime","lastLoginTime","accessibleTime"}                             |
 | Comment   :                                                                                    |
 |                                                                                                |
 +------------------------------------------------------------------------------------------------+

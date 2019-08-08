@@ -3,6 +3,9 @@ package com.authserver.controller;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
 import com.authserver.data.ApiResult;
 import com.authserver.service.GoogleOAuthService;
 import com.robi.util.MapUtil;
@@ -36,12 +39,30 @@ public class MainController {
     public ModelAndView mainPage(
         @RequestParam(name = "audience", required = false) String audience,
         @RequestParam(name = "duration", required = false) String duration,
-        @RequestParam(name = "afterIssueParam", required = false) String afterIssueParam)
+        @RequestParam(name = "afterIssueParam", required = false) String afterIssueParam,
+        @RequestParam(name = "userJwt", required = false) String userJwt,
+        @RequestParam(name = "keepLoggedIn", required = false) String keepLoggedIn,
+        HttpServletResponse response)
     {
-        Map<String, Object> modelMap = new HashMap<String, Object>();
+        // Data for cookie
+        if (userJwt != null) {
+            Cookie userJwtCookie = new Cookie("userJwt", userJwt);
+            int userJwtCookieMaxAgeMin = 0;
 
-        // Extra Datas
-        modelMap.put("audience", audience);
+            if (keepLoggedIn != null && keepLoggedIn.equals("true")) {
+                userJwtCookieMaxAgeMin = Integer.parseInt(env.getProperty("users.keepLoggedInCookieLifeSec")) * 60;
+            }
+            else {
+                userJwtCookieMaxAgeMin = Integer.parseInt(env.getProperty("userJwt.jwtDefaultLifeMin"));
+            }
+
+            userJwtCookie.setMaxAge(userJwtCookieMaxAgeMin);
+            response.addCookie(userJwtCookie);
+        }
+
+        // Data for view
+        Map<String, Object> modelMap = new HashMap<String, Object>();
+        modelMap.put("audience", audience == null ? env.getProperty("auths.audienceName") : audience);
         modelMap.put("duration", duration);
         /**
          *  <afterIssueParam>

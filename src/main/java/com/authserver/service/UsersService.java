@@ -81,7 +81,7 @@ public class UsersService {
         USER_JWT_AES_KEY = new SecretKeySpec(aes128KeyBytes, "AES");
 
         // USER_JWT_DEFAULT_DURATION_MS
-        USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtLifeMinuteDefault")) * 60000L;
+        USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtDefaultLifeMin")) * 60000L;
         
         // USER_JWT_REQUEST_LIMIT_MS
         USER_JWT_REQUEST_LIMIT_MS = Long.parseLong(env.getProperty("userJwt.issueRequestLimitMs"));
@@ -143,6 +143,55 @@ public class UsersService {
 
         logger.info("User select success! (selectedUser: " + selectedUser.toString() + ")");
         return ApiResult.make(true, null, MapUtil.toMap("selectedUser", selectedUser));
+    }
+
+    /**
+     * <p>DB에서 userJwt를 검증후 회원을 조회합니다.</p>
+     * @param userJwt : 인증서버에서 발급한 유효한 userJwt
+     * @return 존재하면 "id","email","nickName","fullName","gender","dateOfBirth","accessLevel",  
+                        "status","joinTime","lastLoginTime","accessibleTime"값들과 true,
+                        존재하지 않으면 false
+     */
+    public ApiResult selectUserByJwt(String userJwt) {
+        ApiResult paramValidationRst = ValidatorUtil.nullOrZeroLen("userJwt", userJwt);
+        if (paramValidationRst == null || !paramValidationRst.getResult()) {
+            logger.error("'paramValidationRst' is null or false! (paramValidationRst: " + paramValidationRst + ")");
+            return paramValidationRst;
+        }
+
+        ApiResult jwtValidationRst = validateUserJwt(AUTHS_AUDIENCE_NAME, userJwt);
+        if (jwtValidationRst == null || !jwtValidationRst.getResult()) {
+            logger.error("'jwtValidationRst' is null or false! (jwtValidationRst: " + jwtValidationRst + ")");
+            return jwtValidationRst;
+        }
+
+        String email = jwtValidationRst.getDataAsStr("email");
+        ApiResult selectUserRst = selectUserByKey("email", email);
+        if (selectUserRst == null || !selectUserRst.getResult()) {
+            logger.error("'selectedUserRst' is null or false! (selectedUser: " + selectUserRst + ")");
+            return selectUserRst;
+        }
+
+        Users selectedUser = (Users) selectUserRst.getData("selectedUser");
+        if (selectedUser == null) {
+            logger.error("'selectedUser' is null!");
+            return ApiResult.make(false);
+        }
+
+        logger.info("User select success! (selectedUser: " + selectedUser.toString() + ")");
+        return ApiResult.make(true, MapUtil.toMap(
+            "id",              selectedUser.getId(),
+            "email",           selectedUser.getEmail(),
+            "nickName",        selectedUser.getNickname(),
+            "fullName",        selectedUser.getFullName(),
+            "gender",          selectedUser.getGender(),
+            "dateOfBirth",     selectedUser.getDateOfBirth(),
+            "accessLevel",     selectedUser.getAccessLevel(),
+            "status",          selectedUser.getStatus(),
+            "joinTime",        selectedUser.getJoinTime(),
+            "lastLoginTime",   selectedUser.getLastLoginTime(),
+            "accessibleTime",  selectedUser.getAccessibleTime())
+        );
     }
 
     /**
