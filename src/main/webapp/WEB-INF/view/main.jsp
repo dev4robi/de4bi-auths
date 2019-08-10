@@ -39,7 +39,7 @@
 		<div class="form-row justify-content-around align-items-center">
 			<div class="form-group col-md-1"></div>
 			<div class="form-group col-md-2 align-self-center">
-				<label for="input_info_id">No.</label>
+				<label for="input_info_id">User No#</label>
 				<input type="email" class="form-control" id="input_info_id" placeholder="회원번호" readonly>
 			</div>
 			<div class="form-group col-md-4 align-self-center">
@@ -58,13 +58,17 @@
 		</div>
 		<div class="form-row justify-content-around align-items-center">
 			<div class="form-group col-md-1"></div>
-			<div class="form-group col-md-5 align-self-center">
-				<label for="input_info_password">Password</label>
-				<input type="password" class="form-control" id="input_info_password" placeholder="비밀번호">
+			<div class="form-group col-md-4 align-self-center">
+				<label for="input_info_password">Origin Password</label>
+				<input type="password" class="form-control" id="input_info_origin_password" placeholder="기존 비밀번호">
 			</div>
-			<div class="form-group col-md-5 align-self-center">
-				<label for="input_info_password_check">Password Check</label>
-				<input type="password" class="form-control" id="input_info_password_check" placeholder="비밀번호 확인">
+			<div class="form-group col-md-3 align-self-center">
+				<label for="input_info_password">New Password</label>
+				<input type="password" class="form-control" id="input_info_password" placeholder="변경할 비밀번호">
+			</div>
+			<div class="form-group col-md-3 align-self-center">
+				<label for="input_info_password_check">New Password Check</label>
+				<input type="password" class="form-control" id="input_info_password_check" placeholder="변경할 비밀번호 확인">
 			</div>
 			<div class="form-group col-md-1"></div>
 		</div>
@@ -72,19 +76,26 @@
 			<div class="form-group col-md-1"></div>
 			<div class="form-group col-md-3 align-self-center">
 				<label for="input_info_nickname">Nickname</label>
-				<input type="text" class="form-control" id="input_info_nickname" placeholder="닉네임" readonly>
+				<input type="text" class="form-control" id="input_info_nickname" placeholder="닉네임 (2~16자)" readonly>
 			</div>
 			<div class="form-group col-md-3 align-self-center">
 				<label for="input_info_full_name">Full Name</label>
 				<input type="text" class="form-control" id="input_info_full_name" placeholder="이름">
 			</div>
-			<div class="form-group col-md-2 align-self-center">
+			<div class="form-group col-md-3 align-self-center">
 				<label for="input_info_date_of_birth">Date of birth</label>
 				<input type="text" class="form-control" id="input_info_date_of_birth" placeholder="생년월일">
 			</div>
-			<div class="form-group col-md-2 align-self-center">
-				<label for="input_info_gender">Gender</label>
-				<input type="text" class="form-control" id="input_info_gender" placeholder="성별" readonly>
+            <div class="form-group col-md-1 align-self-center">
+				<label for="input_info_radio_gender">Gender</label><br>
+				<div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_info_radio_gender_male" value="M">
+                    <label class="form-check-label" for="input_info_radio_gender_male">M(남)</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="inlineRadioOptions" id="input_info_radio_gender_female" value="F">
+                    <label class="form-check-label" for="input_info_radio_gender_female">F(여)</label>
+                </div>
 			</div>
 			<div class="form-group col-md-1"></div>
 		</div>

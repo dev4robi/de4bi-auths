@@ -182,7 +182,7 @@ public class UsersService {
         return ApiResult.make(true, MapUtil.toMap(
             "id",              selectedUser.getId(),
             "email",           selectedUser.getEmail(),
-            "nickName",        selectedUser.getNickname(),
+            "nickname",        selectedUser.getNickname(),
             "fullName",        selectedUser.getFullName(),
             "gender",          selectedUser.getGender(),
             "dateOfBirth",     selectedUser.getDateOfBirth(),

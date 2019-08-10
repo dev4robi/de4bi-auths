@@ -3,11 +3,21 @@ $(document).ready(function(){
     $('#div_userinfo').hide();
     $('#div_signin').hide();
 
+    // user info form
     // logout button
     $('#button_info_logout').on('click', function(){
         logout();
     });
 
+    $('#button_info_update').on('click', function(){
+        updateUserInfo();
+    });
+
+    $('#button_info_deregister').on('click', function(){
+        deregister();
+    });
+
+    // signin form
     // login button
     $('#input_password').keyup(function(key){
         if (key.keyCode == 13) login(); // enter key
@@ -51,7 +61,8 @@ function getUserInfoWihtUpdateUI(userJwt) {
         function(apiResult) {
             if (!AJAX.checkResultSuccess(apiResult)) {
                 alert(AJAX.getResultMsg(apiResult));
-                return;
+                $.removeCookie('userJwt');
+                location.replace('/main');
             }
 
             $('#input_info_id').val(AJAX.getResultData(apiResult, 'id'));
@@ -61,12 +72,17 @@ function getUserInfoWihtUpdateUI(userJwt) {
             $('#input_info_nickname').val(AJAX.getResultData(apiResult, 'nickname'));
             $('#input_info_full_name').val(AJAX.getResultData(apiResult, 'fullName'));
             $('#input_info_date_of_birth').val(new Date(AJAX.getResultData(apiResult, 'dateOfBirth')).format('yyyy.MM.dd'));
-            $('#input_info_gender').val(AJAX.getResultData(apiResult, 'gender'));
+            
+            if (AJAX.getResultData(apiResult, 'gender') == 'M') {
+                $('#input_info_radio_gender_male').click();
+            }
+            else {
+                $('#input_info_radio_gender_femail').click();
+            }
+            
             $('#input_info_join_time').val(new Date(AJAX.getResultData(apiResult, 'joinTime')).format('yyyy-MM-dd HH:mm:ss'));
             $('#input_info_last_login_time').val(new Date(AJAX.getResultData(apiResult, 'lastLoginTime')).format('yyyy-MM-dd HH:mm:ss'));
             $('#input_info_service_accessible_time').val(new Date(AJAX.getResultData(apiResult, 'accessibleTime')).format('yyyy-MM-dd HH:mm:ss'));
-
-            // @@ 로그인 시간 유지부분부터 확인. 로그인시간 유지 안시키면 30분이 기본일텐데? 왜 main 다시 호출하면 로그아웃이지?
 
             $('#div_signin').hide();
             $('#div_userinfo').show();
@@ -140,6 +156,55 @@ function logout() {
     $.removeCookie('userJwt');
     alert('로그아웃 되었습니다.');
     location.replace('/main');
+}
+
+// 회원정보 수정
+function updateUserInfo() {
+    //{"password","nickname","fullName","gender","dateOfBirth"}   
+
+    if (!confirm('정말로 회원 정보를 수정하시겠습니까?')) {
+        alert('회원정보 수정을 취소했습니다.');
+        return;
+    }
+
+    var password;
+    var nickname;
+    var fullName;
+    var gender;
+    var dateOfBirth;
+
+    // 회원정보 수정/탈퇴시 패스워드 전달하여 한번 더 검증하게 함.
+    // 회원정보 수정 데이터 파싱및 검증부분 만들기. 여기부터 시작 @@
+}
+
+// 회원탈퇴
+function deregister() {
+    if (!confirm('회원탈퇴후 복원할 수 없습니다.\n정말로 탈퇴하시겠습니까?')) {
+        alert('회원 탈퇴를 취소했습니다.');
+        return;
+    }
+
+    AJAX.apiCall('DELETE', '/user', $.cookie('userJwt'), null,
+        // Always
+        function() {
+            // ...
+        },
+        // Success
+        function(apiResult) {
+            if (!AJAX.checkResultSuccess(apiResult)) {
+                alert('회원 탈퇴에 실패했습니다.\n(' + AJAX.getResultMsg(apiResult) + ')');
+                return;
+            }
+
+            $.removeCookie('userJwt');
+            alert('회원 탈퇴에 성공했습니다.\n메인페이지로 돌아갑니다.');
+            location.replace('/main');
+        },
+        // Fail
+        function() {
+            alert('서버와 통신에 실패했습니다.');
+        }
+    );
 }
 
 // userJwt 발급후 수행

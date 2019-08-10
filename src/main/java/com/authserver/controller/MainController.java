@@ -53,7 +53,7 @@ public class MainController {
                 userJwtCookieMaxAgeMin = Integer.parseInt(env.getProperty("users.keepLoggedInCookieLifeSec")) * 60;
             }
             else {
-                userJwtCookieMaxAgeMin = Integer.parseInt(env.getProperty("userJwt.jwtDefaultLifeMin"));
+                userJwtCookieMaxAgeMin = Integer.parseInt(env.getProperty("users.defaultCookieLifeSec"));
             }
 
             userJwtCookie.setMaxAge(userJwtCookieMaxAgeMin);
