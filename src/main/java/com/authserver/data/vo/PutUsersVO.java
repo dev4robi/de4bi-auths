@@ -10,7 +10,7 @@ import lombok.ToString;
 public class PutUsersVO {
 
     private String password;
-    private String nickname;
+    private String newPassword;
     private String fullName;
     private String gender;
     private Long dateOfBirth;

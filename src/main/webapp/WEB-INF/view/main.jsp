@@ -19,9 +19,9 @@
 	<link rel="stylesheet" href="/common/lib/fontawesome-5.8.1/css/fontawesome-5.8.1.css">
 	<script type="text/javascript" src="/common/lib/fontawesome-5.8.1/js/fontawesome-5.8.1.js"></script>
 	<!-- common.js -->
-	<script type="text/javascript" src="/common/js/common.js?ver<%=System.currentTimeMillis()%>"></script>
+	<script type="text/javascript" src="/common/js/common.js?ver=<%=System.currentTimeMillis()%>"></script>
 	<!-- register.js -->
-	<script type="text/javascript" src="/view/js/main.js?ver<%=System.currentTimeMillis()%>"></script>
+	<script type="text/javascript" src="/view/js/main.js?ver=<%=System.currentTimeMillis()%>"></script>
 </head>
 <body class="container-fluid">
 	<!-- Title -->

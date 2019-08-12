@@ -286,7 +286,7 @@ public class UsersService {
      * @return 갱신성공시 true, 실패시 false
      */
     @Transactional
-    public ApiResult updateUser(String userJwt, String password, String nickname,
+    public ApiResult updateUser(String userJwt, String password, String newPassword,
                                 String fullName, String gender, Long dateOfBirth) {
         // Validate UserJwt
         ApiResult userJwtValidateRst = validateUserJwt(AUTHS_AUDIENCE_NAME, userJwt);
@@ -305,22 +305,22 @@ public class UsersService {
             return paramValidationRst;
         }
 
-        if (!(paramValidationRst = ValidatorUtil.strLen("password", password, 8, 32)).getResult()) {
+        if (!(paramValidationRst = ValidatorUtil.strLen("password", password, 8, 64)).getResult()) {
             logger.error("'password' vaildation failed!");
             return paramValidationRst;
         }
 
-        if (!(paramValidationRst = ValidatorUtil.strLen("nickname", nickname, 4, 16)).getResult()) {
-            logger.error("'nickname' vaildation failed!");
+        if (newPassword != null && !(paramValidationRst = ValidatorUtil.strLen("newPassword", newPassword, 8, 64)).getResult()) {
+            logger.error("'newPassword' vaildation failed!");
             return paramValidationRst;
         }
 
-        if (!(paramValidationRst = ValidatorUtil.strLen("fullName", fullName, 2, 64)).getResult()) {
+        if (fullName != null && !(paramValidationRst = ValidatorUtil.strLen("fullName", fullName, 2, 64)).getResult()) {
             logger.error("'fullName' vaildation failed!");
             return paramValidationRst;
         }
 
-        if (!(paramValidationRst = ValidatorUtil.isGender(gender)).getResult()) {
+        if (gender != null && !(paramValidationRst = ValidatorUtil.isGender(gender)).getResult()) {
             logger.error("'gender' vaildation failed!");
             return paramValidationRst;
         }
@@ -330,18 +330,8 @@ public class UsersService {
             return paramValidationRst;
         }
 
-        // Password salting and hashing
-        ApiResult hashingPasswordRst = hashingPassword(email, password);
-
-        if (!hashingPasswordRst.getResult()) {
-            logger.error("'hashingPasswordRst' is false!");
-            return hashingPasswordRst;
-        }
-
-        password = (String) hashingPasswordRst.getData("password");
-
         // Find users from DB
-        if (!(paramValidationRst = selectUserByKey(null, email)).getResult()) {
+        if (!(paramValidationRst = selectUserByKey("email", email)).getResult()) {
             logger.error("selectUserByEmail() return false!");
             return paramValidationRst;
         }
@@ -353,14 +343,33 @@ public class UsersService {
             return ApiResult.make(false);
         }
 
+        // Check password
+        ApiResult passwordCheckRst = checkUserPassword(updatedUser, password);
+
+        if (passwordCheckRst != null && !passwordCheckRst.getResult()) {
+            logger.error("'passwordCheckRst' is null or false!");
+            return passwordCheckRst;
+        }
+
+        // Make new salted password
+        if (newPassword != null) {
+            ApiResult newPasswordRst = hashingPassword(email, newPassword);
+
+            if (!newPasswordRst.getResult()) {
+                logger.error("'hashingPasswordRst' is false!");
+                return newPasswordRst;
+            }
+
+            newPassword = newPasswordRst.getDataAsStr("password");
+        }
+
         // JPA - update users
         try {
             // [Note] 빌더로 새 Users 객체를 생성하여 save()하면, Duplicated Key 오류 발생.
-            updatedUser.setPassword(password);
-            updatedUser.setNickname(nickname);
-            updatedUser.setFullName(fullName);
-            updatedUser.setGender(gender.charAt(0));
-            updatedUser.setDateOfBirth(dateOfBirth);
+            if (newPassword != null) updatedUser.setPassword(newPassword);
+            if (fullName != null) updatedUser.setFullName(fullName);
+            if (gender != null) updatedUser.setGender(gender.charAt(0));
+            if (dateOfBirth != null) updatedUser.setDateOfBirth(dateOfBirth);
             
             if (usersRepo.save(updatedUser) == null) {
                 logger.error("save() for update return null!");
@@ -411,10 +420,11 @@ public class UsersService {
     /**
      * <p>DB에 회원정보를 삭제(갱신)합니다.</p>
      * @param userJwt : 회원 JWT
+     * @param password : 회원 비밀번호
      * @return 삭제성공시 true, 실패시 false
      */
     @Transactional
-    public ApiResult deleteUser(String userJwt) {
+    public ApiResult deleteUser(String userJwt, String password) {
         // Validate UserJwt
         ApiResult userJwtValidateRst = validateUserJwt(AUTHS_AUDIENCE_NAME, userJwt);
 
@@ -432,16 +442,25 @@ public class UsersService {
             return paramValidationRst;
         }
 
-        if (!(paramValidationRst = selectUserByKey(null, email)).getResult()) {
+        if (!(paramValidationRst = selectUserByKey("email", email)).getResult()) {
             logger.error("selectUserByEmail() return false!");
             return paramValidationRst;
         }
 
+        // Select users from DB
         Users deletedUser = (Users) paramValidationRst.getData("selectedUser");
 
         if (deletedUser.getStatus() == UsersStatus.DEREGISTERED) {
             logger.error("User already deregestered! (email: " + email + ")");
             return ApiResult.make(false, "이미 탈퇴한 회원입니다.");
+        }
+
+        // Check password
+        ApiResult passwordCheckRst = checkUserPassword(deletedUser, password);
+
+        if (passwordCheckRst != null && !passwordCheckRst.getResult()) {
+            logger.error("'passwordCheckRst' is null or false!");
+            return passwordCheckRst;
         }
 
         // JPA - delete(update) users
@@ -493,6 +512,42 @@ public class UsersService {
         }
 
         return ApiResult.make(true, null, MapUtil.toMap("password", password));
+    }
+
+    /**
+     * <p>회원 비밀번호가 일치하는지 확인합니다.
+     * @param selectedUser : 비밀번호를 비교할 {@link Users} 객체
+     * @param inputPassword : 사용자로부터 전달받은 해상된 비밀번호
+     * @return 비밀번호 일치시 true, 불일치시 false
+     */
+    private ApiResult checkUserPassword(Users selectedUser, String inputPassword) {
+        String email = selectedUser.getEmail();
+        ApiResult paramRst = null;
+
+        if (!(paramRst = ValidatorUtil.isEmail(email)).getResult()) {
+            logger.error("'email' validation failed!");
+            return paramRst;
+        }
+
+        if (!(paramRst = ValidatorUtil.nullOrZeroLen("inputPassword", inputPassword)).getResult()) {
+            logger.error("'inputPassword' validation failed!");
+            return paramRst;
+        }
+
+        ApiResult pwHashingRst = hashingPassword(email, inputPassword);
+        String hashedPassword = pwHashingRst.getDataAsStr("password");
+
+        if (pwHashingRst == null || !pwHashingRst.getResult()) {
+            logger.error("Fail to hashing request password!");
+            return pwHashingRst;
+        }
+
+        if (!selectedUser.getPassword().equals(hashedPassword)) {
+            logger.error("Password NOT equals!");
+            return ApiResult.make(false, "존재하지 않는 회원이거나, 비밀번호가 일치하지 않습니다.");
+        }
+
+        return ApiResult.make(true);
     }
 
     /**
@@ -599,17 +654,11 @@ public class UsersService {
         }
 
         // 비밀번호 검사
-        ApiResult pwHashingRst = hashingPassword(email, password);
-        String hashedPassword = pwHashingRst.getDataAsStr("password");
+        ApiResult passwordCheckRst = checkUserPassword(selectedUser, password);
 
-        if (pwHashingRst == null || !pwHashingRst.getResult()) {
-            logger.error("Fail to hashing request password!");
-            return pwHashingRst;
-        }
-
-        if (!selectedUser.getPassword().equals(hashedPassword)) {
-            logger.error("Password NOT equals!");
-            return ApiResult.make(false, "비밀번호가 일치하지 않습니다.");
+        if (passwordCheckRst == null || !passwordCheckRst.getResult()) {
+            logger.error("'passwordCheckRst' is null or false! (passwordCheckRst: " + passwordCheckRst + ")");
+            return passwordCheckRst;
         }
         
         // 회원 서비스 접근허용 검사
@@ -724,7 +773,7 @@ public class UsersService {
         catch (ExpiredJwtException e){
             // 토큰 유효기간이 만료된 경우
             logger.error("Exception! JWT is EXPIRED! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "userJwt가 만료되었습니다.");
+            return ApiResult.make(false, "토큰이 만료되었습니다. 다시 로그인 하십시오.");
         }
         catch (SignatureException e) {
             // 서명검사 오류가 발생한 경우

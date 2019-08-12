@@ -18,7 +18,7 @@ var AJAX = {
             headers: reqHeader,
             type : 'json',
             contentType : 'application/json',
-            data : JSON.stringify(reqBody)
+            data : (!!reqBody ? JSON.stringify(reqBody) : '')
         })
         .always(function(data_jqXHR, textStatus, jqXHR_errorThrown) {
             if (!!alwaysFunc) return alwaysFunc(data_jqXHR, textStatus, jqXHR_errorThrown);
@@ -28,7 +28,7 @@ var AJAX = {
             return true;
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
-            if (!!failFunc) return failFunc(jqXHR, textStatus, errorThrown);
+            if (!!failFunc) return failFunc(jqXHR, JSON.stringify(textStatus), errorThrown);
             return false;
         });
     },
@@ -242,4 +242,119 @@ function SHA256(s) {
   
     s = Utf8Encode(s);
     return binb2hex(core_sha256(str2binb(s), s.length * chrsz));
+}
+
+// 패스워드 조건 검사
+function checkPassword(password, passwordCheck) {
+    if (!password) {
+        alert('비밀번호를 입력해주세요.');
+        return false;
+    }
+    else if (password.length < 8 || password.length > 32) {
+        alert('비밀번호는 8~32자 사이여야 합니다.\n(현재: ' + password.length + '자)');
+        return false;
+    }
+    else if (!!passwordCheck && password != passwordCheck) {
+        alert('비밀번호 확인이 일치하지 않습니다.');
+        return false;
+    }
+
+    return true;
+}
+
+// 닉네임 조건 검사
+function checkNickname(nickname) {
+    if (!nickname) {
+        alert('닉네임을 입력해주세요.');
+        return false;
+    }
+    else if (nickname.length < 2 || nickname.length > 16) {
+        alert('닉네임은 2~16자 사이여야 합니다.\n(현재: ' + nickname.length + '자)');
+        return false;
+    }
+
+    return true;
+}
+
+// 이름 조건 검사
+function checkFullName(fullName) {
+    if (!fullName) {
+        alert('이름을 입력해주세요.');
+        return false;
+    }
+    else if (fullName.length < 1 || fullName.length > 64) {
+        alert('이름은 1~64자 사이여야 합니다.\n(현재: ' + fullName.length + '자)');
+        return false;
+    }
+
+    return true;
+}
+
+// 성별 조건 검사
+function checkGender(gender) {
+    if (!gender) {
+        alert('성별을 선택해주세요.');
+        return false;
+    }
+
+    if (gender != 'M' && gender != 'F') {
+        alert('성별값은 M또는 F여야 합니다.\n(현재: ' + gender + ')');
+        return false;
+    }
+
+    return true;
+}
+
+// 생년월일 문자열을 시간(ms)으로 변환
+function convertDateOfBirth(dateOfBirth) {
+    if (!dateOfBirth) {
+        alert('생년월일을 입력해주세요.');
+        return null;
+    }
+
+    if (dateOfBirth.length < 8) {
+        alert('올바른 생년월일값을 입력해주세요.\n(현재: ' + dateOfBirth + ' / 양식: yyyy.MM.dd)');
+        return null;
+    }
+
+    // Format : yyyy.MM.dd
+    var monthIdx = dateOfBirth.indexOf('.');
+    var dateIdx = dateOfBirth.lastIndexOf('.');
+    var year = null;
+    var month = null;
+    var date = null;
+
+    try {
+        year = parseInt(dateOfBirth.substring(0, monthIdx));
+        month = parseInt(dateOfBirth.substring(monthIdx + 1, dateIdx));
+        date = parseInt(dateOfBirth.substring(dateIdx + 1, dateOfBirth.length));
+    }
+    catch {
+        alert('올바른 생년월일값을 입력해주세요.\n(현재: ' + dateOfBirth + ' / 양식: yyyy.MM.dd)');
+        return null;
+    }
+
+    if (year < 0 || year > 9999) {
+        alert('올바른 연도를 입력해주세요.\n(현재: ' + year + ")")
+        return null;
+    }
+
+    if (month < 0 || month > 12) {
+        alert('올바른 월을 입력해주세요.\n(현재: ' + year + ")")
+        return null;
+    }
+
+    if (date < 0 || date > 31) {
+        alert('올바른 일을 입력해주세요.\n(현재: ' + date + ")")
+        return null;
+    }
+
+    var date = null;
+    
+    if ((date = new Date(dateOfBirth)) == null) {
+        alert('생년월일 변환중 오류가 발생했습니다. (입력값: ' + dateOfBirth + ')');
+        return null;
+    }
+
+    return date.getTime();
 }

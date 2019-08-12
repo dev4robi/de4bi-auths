@@ -139,14 +139,17 @@ function login() {
                 var userJwt = AJAX.getResultData(apiResult, 'userJwt');
                 var keepLoggedIn = $('#cb_keep_logged_in').is(':checked');
                 afterIssuing(userJwt, keepLoggedIn);
+                return;
             }
             else {
                 alert('로그인에 실패했습니다.\n(' + apiResult.result_message + ')');
+                return;
             }
         },
         // Fail
-        function() {
-            alert('서버와 통신에 실패했습니다.');
+        function(textStatus) {
+            alert('서버와 통신에 실패했습니다.\n(Code: ' + textStatus + ')');
+            return;
         }
     );
 }
@@ -160,31 +163,102 @@ function logout() {
 
 // 회원정보 수정
 function updateUserInfo() {
-    //{"password","nickname","fullName","gender","dateOfBirth"}   
+    var originPassword      = $('#input_info_origin_password').val();
+    var newPassword         = $('#input_info_password').val();
+    var newPasswordCheck    = $('#input_info_password_check').val();
+    var fullName            = $('#input_info_full_name').val();
+    var gender;
+
+    if (!checkPassword(originPassword, null)) {
+        return;
+    }
+
+    if ((!!newPassword || !!newPasswordCheck)) {
+        if (!checkPassword(newPassword, newPasswordCheck)) {
+            return;
+        }
+    }
+
+    if (!newPassword) {
+        newPassword = null;
+    }
+
+    if ($('#input_info_radio_gender_male').is(':checked')) {
+        gender = $('#input_info_radio_gender_male').val();
+    }
+    else if ($('#input_info_radio_gender_female').is(':checked')) {
+        gender = $('#input_info_radio_gender_female').val();
+    }
+
+    if (!checkGender(gender)) {
+        return;
+    }
+
+    if (!checkFullName(fullName)) {
+        return;
+    }
+
+    var dateOfBirth = convertDateOfBirth($('#input_info_date_of_birth').val());
+    
+    if (!dateOfBirth) {
+        return;
+    }
 
     if (!confirm('정말로 회원 정보를 수정하시겠습니까?')) {
         alert('회원정보 수정을 취소했습니다.');
         return;
     }
 
-    var password;
-    var nickname;
-    var fullName;
-    var gender;
-    var dateOfBirth;
+    var reqBody = {
+        'password': SHA256(originPassword + $('#input_clientSalt').val()),
+        'newPassword': (!!newPassword ? SHA256(newPassword + $('#input_clientSalt').val()) : null),
+        'fullName' : fullName,
+        'gender' : gender,
+        'dateOfBirth' : dateOfBirth
+    };
 
-    // 회원정보 수정/탈퇴시 패스워드 전달하여 한번 더 검증하게 함.
-    // 회원정보 수정 데이터 파싱및 검증부분 만들기. 여기부터 시작 @@
+    AJAX.apiCall('PUT', '/users', {'userJwt':$.cookie('userJwt')}, reqBody,
+        // Always
+        function() {
+            // alert(JSON.stringify(reqBody));
+        },
+        // Success
+        function(apiResult) {
+            if (!AJAX.checkResultSuccess(apiResult)) {
+                alert(AJAX.getResultMsg(apiResult));
+                return;
+            }
+
+            alert('회원 정보가 수정되었습니다.');
+            location.reload();
+            return;
+        },
+        // Fail
+        function(textStatus) {
+            alert('서버와 통신에 실패했습니다.\n(Code: ' + textStatus + ')');
+            return;
+        }
+    );
 }
 
 // 회원탈퇴
 function deregister() {
+    var originPassword = $('#input_info_origin_password').val();
+    // 회원탈퇴부터 시작 @@
+    if (!checkPassword(originPassword, null)) {
+        return;
+    }
+
     if (!confirm('회원탈퇴후 복원할 수 없습니다.\n정말로 탈퇴하시겠습니까?')) {
         alert('회원 탈퇴를 취소했습니다.');
         return;
     }
 
-    AJAX.apiCall('DELETE', '/user', $.cookie('userJwt'), null,
+    var reqBody = {
+        'password' : SHA256(originPassword + $('#input_clientSalt').val()),
+    };
+
+    AJAX.apiCall('DELETE', '/users', {'userJwt':$.cookie('userJwt')}, reqBody,
         // Always
         function() {
             // ...
@@ -199,10 +273,12 @@ function deregister() {
             $.removeCookie('userJwt');
             alert('회원 탈퇴에 성공했습니다.\n메인페이지로 돌아갑니다.');
             location.replace('/main');
+            return;
         },
         // Fail
-        function() {
-            alert('서버와 통신에 실패했습니다.');
+        function(textStatus) {
+            alert('서버와 통신에 실패했습니다.\n(Code: ' + textStatus + ')');
+            return;
         }
     );
 }

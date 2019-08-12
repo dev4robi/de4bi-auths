@@ -58,12 +58,12 @@ public class UsersRestController {
 
     @PutMapping("/users")
     public Map<String, Object> putUsers(@RequestHeader String userJwt, @RequestBody PutUsersVO putUsersVO) {
-        return usersSvc.updateUser(userJwt, putUsersVO.getPassword(), putUsersVO.getNickname(),
+        return usersSvc.updateUser(userJwt, putUsersVO.getPassword(), putUsersVO.getNewPassword(),
                                    putUsersVO.getFullName(), putUsersVO.getGender(), putUsersVO.getDateOfBirth()).toMap();
     }
 
     @DeleteMapping("/users")
-    public Map<String, Object> deleteUsers(@RequestHeader String userJwt) {
-        return usersSvc.deleteUser(userJwt).toMap();
+    public Map<String, Object> deleteUsers(@RequestHeader String userJwt, @RequestBody String password) {
+        return usersSvc.deleteUser(userJwt, password).toMap();
     }
 }

@@ -71,7 +71,7 @@
 | URL       : /users                                                                             |
 | Method    : PUT                                                                                |
 | ReqHeader : {"userJwt(R)"}                                                                     |
-| ReqBody   : {"password","nickname","fullName","gender","dateOfBirth"}                          |
+| ReqBody   : {"password(R)","newPassword","fullName(R)","gender(R)","dateOfBirth(R)"}           |
 | ResHeader :                                                                                    |
 | ResBody   : Default                                                                            |
 | Comment   :                                                                                    |
@@ -82,7 +82,7 @@
 | URL       : /users                                                                             |
 | Method    : DELETE                                                                             |
 | ReqHeader : {"userJwt(R)"}                                                                     |
-| ReqBody   :                                                                                    |
+| ReqBody   : {"password(R)"}                                                                    |
 | ResHeader :                                                                                    |
 | ResBody   : Default                                                                            |
 | Comment   :                                                                                    |
