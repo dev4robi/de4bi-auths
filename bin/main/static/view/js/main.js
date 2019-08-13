@@ -244,7 +244,7 @@ function updateUserInfo() {
 // 회원탈퇴
 function deregister() {
     var originPassword = $('#input_info_origin_password').val();
-    // 회원탈퇴부터 시작 @@
+
     if (!checkPassword(originPassword, null)) {
         return;
     }
@@ -255,7 +255,7 @@ function deregister() {
     }
 
     var reqBody = {
-        'password' : SHA256(originPassword + $('#input_clientSalt').val()),
+        'password' : SHA256(originPassword + $('#input_clientSalt').val())
     };
 
     AJAX.apiCall('DELETE', '/users', {'userJwt':$.cookie('userJwt')}, reqBody,

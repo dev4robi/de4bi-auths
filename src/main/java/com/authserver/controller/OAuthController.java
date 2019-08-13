@@ -1,6 +1,8 @@
 package com.authserver.controller;
 
 import com.authserver.data.ApiResult;
+import com.authserver.data.jpa.enums.UsersStatus;
+import com.authserver.data.jpa.table.Users;
 import com.authserver.service.GoogleOAuthService;
 import com.authserver.service.UsersService;
 import com.robi.util.MapUtil;
@@ -54,9 +56,13 @@ public class OAuthController {
         ApiResult existedUser = usersSvc.selectUserByKey("email", email);
         
         if (existedUser.getResult()) { // 가입된 회원
-            logger.info("'" + email + "' already regestered! redirect to main page.");
-            return new ModelAndView("redirect:/errors", MapUtil.toMap("alertMsg", (email + "\n해당 이메일은 가입되어 있습니다."),
-                                                                     "errorMsg", "이미 가입된 이메일입니다."));
+            Users seletedUser = (Users) existedUser.getData("selectedUser");
+            
+            if (!seletedUser.getStatus().equals(UsersStatus.DEREGISTERED)) {
+                logger.info("'" + email + "' already regestered! redirect to main page.");
+                return new ModelAndView("redirect:/errors", MapUtil.toMap("alertMsg", (email + "\n해당 이메일은 가입되어 있습니다."),
+                                                                          "errorMsg", "이미 가입된 이메일입니다."));
+            }
         }
 
         // sign과 nonce생성

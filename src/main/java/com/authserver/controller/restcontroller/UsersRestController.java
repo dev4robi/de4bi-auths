@@ -3,6 +3,7 @@ package com.authserver.controller.restcontroller;
 import java.util.Map;
 
 import com.authserver.data.ApiResult;
+import com.authserver.data.vo.DeleteUsersVO;
 import com.authserver.data.vo.PostUsersVO;
 import com.authserver.data.vo.PutUsersVO;
 import com.authserver.service.UsersService;
@@ -63,7 +64,7 @@ public class UsersRestController {
     }
 
     @DeleteMapping("/users")
-    public Map<String, Object> deleteUsers(@RequestHeader String userJwt, @RequestBody String password) {
-        return usersSvc.deleteUser(userJwt, password).toMap();
+    public Map<String, Object> deleteUsers(@RequestHeader String userJwt, @RequestBody DeleteUsersVO deleteUsersVO) {
+        return usersSvc.deleteUser(userJwt, deleteUsersVO.getPassword()).toMap();
     }
 }

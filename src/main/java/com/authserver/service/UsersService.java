@@ -138,7 +138,7 @@ public class UsersService {
         if (selectedUser == null) 
         {   
             logger.info("'selectedUser' is null!");
-            return ApiResult.make(false, "존재하지 않는 회원입니다.");
+            return ApiResult.make(false, "존재하지 않는 회원이거나, 비밀번호가 일치하지 않습니다.");
         }
 
         logger.info("User select success! (selectedUser: " + selectedUser.toString() + ")");
@@ -249,23 +249,49 @@ public class UsersService {
 
         password = (String) hashingPasswordRst.getData("password");
 
-        // JPA - insert into users
+        // Check new user is deregestred user
+        ApiResult selectUserRst = selectUserByKey("email", email);
+
+        // JPA - insert into users or update users
         try {
             Long curTime = System.currentTimeMillis();
-            Users insertedUser = Users.builder().email(email).password(password)
-                                                .nickname(nickname).fullName(fullName)
-                                                .gender(gender.charAt(0)).dateOfBirth(dateOfBirth)
-                                                .accessLevel(0).status(UsersStatus.NORMAL)
-                                                .joinTime(curTime).lastLoginTime(0L)
-                                                .accessibleTime(curTime)
-                                                .build();
 
-            if (usersRepo.save(insertedUser) == null) {
-                logger.error("JPA - Fail to insert 'insertedUser'!");
-                throw new Exception();
+            if (selectUserRst == null || !selectUserRst.getResult()) { // Insert
+                Users insertedUser = Users.builder().email(email).password(password)
+                .nickname(nickname).fullName(fullName)
+                .gender(gender.charAt(0)).dateOfBirth(dateOfBirth)
+                .accessLevel(0).status(UsersStatus.NORMAL)
+                .joinTime(curTime).lastLoginTime(0L)
+                .accessibleTime(curTime)
+                .build();
+
+                if (usersRepo.save(insertedUser) == null) {
+                    logger.error("JPA - Fail to insert 'insertedUser'!");
+                    throw new Exception();
+                }
+
+                logger.info("JPA - insert success! (insertedUser:" + insertedUser.toString() + ")");
             }
+            else { // Update
+                Users selectedUser = (Users) selectUserRst.getData("selectedUser");
+                selectedUser.setPassword(password);
+                selectedUser.setNickname(nickname);
+                selectedUser.setFullName(fullName);
+                selectedUser.setGender(gender.charAt(0));
+                selectedUser.setDateOfBirth(dateOfBirth);
+                selectedUser.setAccessLevel(0);
+                selectedUser.setStatus(UsersStatus.NORMAL);
+                selectedUser.setJoinTime(curTime);
+                selectedUser.setLastLoginTime(0L);
+                selectedUser.setAccessibleTime(curTime);
 
-            logger.info("JPA - insert success! (insertedUser:" + insertedUser.toString() + ")");
+                if (usersRepo.save(selectedUser) == null) {
+                    logger.error("JPA - Fail to update 'selectedUser'!");
+                    throw new Exception();
+                }
+
+                logger.info("JPA - update success! (selectedUser:" + selectedUser.toString() + ")");
+            }
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);
@@ -652,14 +678,6 @@ public class UsersService {
             logger.error("'usersUpdateRst' is null or false! (usersUpdateRst: " + usersUpdateRst + ")");
             return usersUpdateRst;
         }
-
-        // 비밀번호 검사
-        ApiResult passwordCheckRst = checkUserPassword(selectedUser, password);
-
-        if (passwordCheckRst == null || !passwordCheckRst.getResult()) {
-            logger.error("'passwordCheckRst' is null or false! (passwordCheckRst: " + passwordCheckRst + ")");
-            return passwordCheckRst;
-        }
         
         // 회원 서비스 접근허용 검사
         ApiResult validateUserRst = validateUserServiceAccesibble(selectedUser);
@@ -667,6 +685,14 @@ public class UsersService {
         if (validateUserRst == null || !validateUserRst.getResult()) {
             logger.error("'validateUserRst' is null or result false!");
             return validateUserRst;
+        }
+
+        // 비밀번호 검사
+        ApiResult passwordCheckRst = checkUserPassword(selectedUser, password);
+
+        if (passwordCheckRst == null || !passwordCheckRst.getResult()) {
+            logger.error("'passwordCheckRst' is null or false! (passwordCheckRst: " + passwordCheckRst + ")");
+            return passwordCheckRst;
         }
 
         // JWT 발급
