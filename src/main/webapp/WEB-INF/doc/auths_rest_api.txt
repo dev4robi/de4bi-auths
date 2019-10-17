@@ -111,7 +111,7 @@
 |                                                                                                |
 +------------------------------------------------------------------------------------------------+
 | Access    : Owner                                                                              |
-| Service   : 유저토큰 생성                                                                      |
+| Service   : 유저토큰 검증                                                                      |
 | URL       : /users/api/jwt/validate                                                            |
 | Method    : POST                                                                               |
 | ReqHeader :                                                                                    |
