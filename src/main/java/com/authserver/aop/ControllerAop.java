@@ -27,7 +27,7 @@ public class ControllerAop {
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
-    private static final String KEYSTR_TID = "tid";
+    private static final String KEYSTR_TID = "trace_id";
 
     @Around("execution(* com.authserver.controller.restcontroller..*.*(..))") // REST controller(CTR) AoP
     public Object aroundRestController(ProceedingJoinPoint pjp) {

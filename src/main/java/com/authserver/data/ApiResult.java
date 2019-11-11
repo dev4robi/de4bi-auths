@@ -6,7 +6,7 @@ import java.util.Map;
 public class ApiResult {
 
     private static final String KEY_RESULT  = "result";
-    private static final String KEY_MESSAGE = "result_message";
+    private static final String KEY_MESSAGE = "result_msg";
     private static final String KEY_DATA    = "result_data";
 
     public static final String DEFAULT_RESULT_TRUE  = "SUCCESS";
