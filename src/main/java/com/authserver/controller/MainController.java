@@ -6,8 +6,8 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 
-import com.authserver.data.ApiResult;
 import com.authserver.service.GoogleOAuthService;
+import com.robi.data.ApiResult;
 import com.robi.util.MapUtil;
 
 import org.slf4j.Logger;

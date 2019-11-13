@@ -49,7 +49,7 @@ $(document).ready(function(){
                     return;
                 }
                 else {
-                    alert('회원 가입에 실패했습니다.\n(사유: ' + apiResult.result_message + ')');
+                    alert('회원 가입에 실패했습니다.\n(사유: ' + apiResult.result_msg + ')');
                     return;
                 }
             },

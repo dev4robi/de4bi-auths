@@ -1,6 +1,6 @@
 package com.authserver.aop;
 
-import com.authserver.data.ApiResult;
+import com.robi.data.ApiResult;
 import com.robi.util.LogUtil;
 
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -46,7 +46,7 @@ public class ServiceAop {
             }
             else if (svcRst instanceof ApiResult) {
                 ApiResult svcApiRst = (ApiResult) svcRst;
-                svcRstInfo = "result=" + svcApiRst.getResult() + ",msg=" + svcApiRst.getMessage();
+                svcRstInfo = "result=" + svcApiRst.getResult() + ",msg=" + svcApiRst.getResultMsg();
             }
             else {
                 logger.error("Service returns 'svcRst' type is NOT 'ApiResult'!");
@@ -55,7 +55,7 @@ public class ServiceAop {
         }
         catch (Throwable e) {
             logger.error("Service Exception!", e);
-            return ApiResult.make(false, "서버 서비스 오류.");
+            return ApiResult.make(false, null, "서버 서비스 오류.");
         }
 
         logger.info(">>> Service END! (svcRstInfo:" + svcRstInfo + ", timeElapsed:" + (System.currentTimeMillis() - beginTime) + "ms)");

@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
-import com.authserver.data.ApiResult;
+import com.robi.data.ApiResult;
 import com.robi.oauth.GoogleOAuth;
 import com.robi.util.CipherUtil;
 import com.robi.util.MapUtil;

@@ -63,7 +63,7 @@ var AJAX = {
     },
     // Get Result message from API Result
     getResultMsg : function(apiResult) {
-        return apiResult.result_message;
+        return apiResult.result_msg;
     }
 }
 

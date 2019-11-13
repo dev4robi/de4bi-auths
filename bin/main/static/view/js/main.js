@@ -142,7 +142,7 @@ function login() {
                 return;
             }
             else {
-                alert('로그인에 실패했습니다.\n(' + apiResult.result_message + ')');
+                alert('로그인에 실패했습니다.\n(' + apiResult.result_msg + ')');
                 return;
             }
         },

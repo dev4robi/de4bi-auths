@@ -1,6 +1,6 @@
 package com.authserver.controller;
 
-import com.authserver.data.ApiResult;
+import com.robi.data.ApiResult;
 import com.authserver.data.jpa.enums.UsersStatus;
 import com.authserver.data.jpa.table.Users;
 import com.authserver.service.GoogleOAuthService;

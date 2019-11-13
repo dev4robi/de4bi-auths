@@ -4,7 +4,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.authserver.data.ApiResult;
+import com.robi.data.ApiResult;
 import com.robi.util.LogUtil;
 import com.robi.util.RandomUtil;
 
@@ -71,7 +71,7 @@ public class ControllerAop {
         }
         catch (Throwable e) {
             logger.error("Controller Exception!", e);
-            return ApiResult.make(false, "서버 컨트롤러 오류.");
+            return ApiResult.make(false, null, "서버 컨트롤러 오류.");
         }
 
         logger.info(">>> REST controller END! (timeElapsed:" + (System.currentTimeMillis() - beginTime) + "ms)");

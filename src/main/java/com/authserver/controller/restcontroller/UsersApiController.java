@@ -2,7 +2,7 @@ package com.authserver.controller.restcontroller;
 
 import java.util.Map;
 
-import com.authserver.data.ApiResult;
+import com.robi.data.ApiResult;
 import com.authserver.data.vo.IssueUserJwtVO;
 import com.authserver.data.vo.ValidateUserJwtVO;
 import com.authserver.service.UsersService;

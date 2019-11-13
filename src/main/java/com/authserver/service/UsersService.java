@@ -8,11 +8,11 @@ import javax.annotation.PostConstruct;
 import javax.crypto.spec.SecretKeySpec;
 import javax.transaction.Transactional;
 
-import com.authserver.data.ApiResult;
 import com.authserver.data.jpa.enums.UsersStatus;
 import com.authserver.data.jpa.repository.UsersRepository;
 import com.authserver.data.jpa.table.Users;
 import com.authserver.util.ValidatorUtil;
+import com.robi.data.ApiResult;
 import com.robi.util.CipherUtil;
 import com.robi.util.JwtUtil;
 import com.robi.util.MapUtil;
@@ -132,13 +132,13 @@ public class UsersService {
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);
-            return ApiResult.make(false, "회원정보 DB조회중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "회원정보 DB조회중 오류가 발생했습니다.");
         }
 
         if (selectedUser == null) 
         {   
             logger.info("'selectedUser' is null!");
-            return ApiResult.make(false, "존재하지 않는 회원이거나, 비밀번호가 일치하지 않습니다.");
+            return ApiResult.make(false, null, "존재하지 않는 회원이거나, 비밀번호가 일치하지 않습니다.");
         }
 
         logger.info("User select success! (selectedUser: " + selectedUser.toString() + ")");
@@ -295,7 +295,7 @@ public class UsersService {
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);
-            return ApiResult.make(false, "회원정보 DB추가중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "회원정보 DB추가중 오류가 발생했습니다.");
         }
 
         return ApiResult.make(true);
@@ -406,7 +406,7 @@ public class UsersService {
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);
-            return ApiResult.make(false, "회원정보 DB수정중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "회원정보 DB수정중 오류가 발생했습니다.");
         }
 
         return ApiResult.make(true);
@@ -436,7 +436,7 @@ public class UsersService {
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);
-            return ApiResult.make(false, "회원정보 DB수정중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "회원정보 DB수정중 오류가 발생했습니다.");
         }
 
         logger.info("JPA - update success! (selectedUser:" + selectedUser.toString() + ")");
@@ -478,7 +478,7 @@ public class UsersService {
 
         if (deletedUser.getStatus() == UsersStatus.DEREGISTERED) {
             logger.error("User already deregestered! (email: " + email + ")");
-            return ApiResult.make(false, "이미 탈퇴한 회원입니다.");
+            return ApiResult.make(false, null, "이미 탈퇴한 회원입니다.");
         }
 
         // Check password
@@ -503,7 +503,7 @@ public class UsersService {
         }
         catch (Exception e) {
             logger.error("JPA Exception!", e);
-            return ApiResult.make(false, "회원 탈퇴중 DB오류가 발생했습니다.");
+            return ApiResult.make(false, null, "회원 탈퇴중 DB오류가 발생했습니다.");
         }
 
         return ApiResult.make(true);
@@ -534,7 +534,7 @@ public class UsersService {
         }
         catch (Exception e) {
             logger.error("Exception while password hashing!", e);
-            return ApiResult.make(false, "비밀번호 암호화중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "비밀번호 암호화중 오류가 발생했습니다.");
         }
 
         return ApiResult.make(true, null, MapUtil.toMap("password", password));
@@ -570,7 +570,7 @@ public class UsersService {
 
         if (!selectedUser.getPassword().equals(hashedPassword)) {
             logger.error("Password NOT equals!");
-            return ApiResult.make(false, "존재하지 않는 회원이거나, 비밀번호가 일치하지 않습니다.");
+            return ApiResult.make(false, null, "존재하지 않는 회원이거나, 비밀번호가 일치하지 않습니다.");
         }
 
         return ApiResult.make(true);
@@ -594,15 +594,15 @@ public class UsersService {
 
         if (validateUserStatus.equals(UsersStatus.SLEEPING)) {
             logger.info("Validated user '" + email + "' status is 'SLEEPING'!");
-            return ApiResult.make(false, "휴면중인 회원입니다.");
+            return ApiResult.make(false, null, "휴면중인 회원입니다.");
         }
         else if (validateUserStatus.equals(UsersStatus.DEREGISTERED)) {
             logger.info("Validated user '" + email + "' status is 'DEREGISTERED'!");
-            return ApiResult.make(false, "탈퇴한 회원입니다.");
+            return ApiResult.make(false, null, "탈퇴한 회원입니다.");
         }
         else if (validateUserStatus.equals(UsersStatus.BLACKLIST)) {
             logger.info("Validated user '" + email + "' status is 'BLACKLIST'!");
-            return ApiResult.make(false, "블랙리스트 처리된 회원입니다.");
+            return ApiResult.make(false, null, "블랙리스트 처리된 회원입니다.");
         }
 
         // 서비스 이용가능시점 검사
@@ -612,7 +612,7 @@ public class UsersService {
         if (serviceAccessibleTime > curTime) {
             logger.info("Validated user '" + email + "' NOT reached accessible time! (serviceAccessibleTime: " +
                         serviceAccessibleTime + " > curTime: " + curTime + ")");
-            return ApiResult.make(false, "서비스 이용가능까지 " + (serviceAccessibleTime - curTime) + "ms 남은 회원입니다.");
+            return ApiResult.make(false, null, "서비스 이용가능까지 " + (serviceAccessibleTime - curTime) + "ms 남은 회원입니다.");
         }
 
         return ApiResult.make(true);
@@ -623,11 +623,11 @@ public class UsersService {
      * @param audience : 발급요청한 대상(서비스)의 식별자
      * @param email : 회원 이메일
      * @param password : 회원 비밀번호
-     * @param duration : 토큰 지속시간 (분 단위)
+     * @param durationMin : 토큰 지속시간 (분 단위)
      * @return 발급 성공시 {@link String} 'userJwt'값과 true, 실패시 false
      */
     @Transactional
-    public ApiResult issueUserJwt(String audience, String email, String password, Long duration) {
+    public ApiResult issueUserJwt(String audience, String email, String password, Long durationMin) {
         // 파라미터 검사
         ApiResult paramRst = null;
 
@@ -646,11 +646,8 @@ public class UsersService {
             return paramRst;
         }
         
-        if (duration == null | duration == 0L) {
-            duration = USER_JWT_DEFAULT_DURATION_MS;
-        }
-        else {
-            duration *= 1000L;
+        if (durationMin == null | durationMin == 0L) {
+            durationMin = USER_JWT_DEFAULT_DURATION_MS;
         }
 
         // 회원정보 획득
@@ -658,7 +655,7 @@ public class UsersService {
 
         if (selectUserRst == null || !selectUserRst.getResult()) {
             logger.error("Fail to find user! (email:" + email + ")");
-            return ApiResult.make(false, "회원 정보를 찾을 수 없습니다.");
+            return ApiResult.make(false, null, "회원 정보를 찾을 수 없습니다.");
         }
 
         // 마지막 발급시간 검사
@@ -668,7 +665,7 @@ public class UsersService {
 
         if (lastLoginTryDeltaMs < USER_JWT_REQUEST_LIMIT_MS) {
             logger.error("'userJwt' request too fast! (lastLoginTryDeltaMs: " + lastLoginTryDeltaMs + ")");
-            return ApiResult.make(false, "너무 짧은 주기로 userJwt를 요청하고 있습니다.");
+            return ApiResult.make(false, null, "너무 짧은 주기로 userJwt를 요청하고 있습니다.");
         }
 
         // 마지막 로그인시간 갱신
@@ -708,7 +705,7 @@ public class UsersService {
         //   - setIssuedAt(String) : 'iat'
         //   - setExpiration(Date) : 'exp'
         //   - setNotBefore(Date) : 'nbf'
-        long jwtExpiredTimeMs = System.currentTimeMillis() + duration;
+        long jwtExpiredTimeMs = System.currentTimeMillis() + (durationMin * 1000L);
 
         String rawUserJwt = JwtUtil.buildJwt(MapUtil.toMap("ver", USER_JWT_VERSION),
                                              MapUtil.toMap("sub", "dev4robi-user-jwt",
@@ -720,14 +717,14 @@ public class UsersService {
 
         if (rawUserJwt == null) {
             logger.error("'rawUserJwt' is null!");
-            return ApiResult.make(false, "JWT생성중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT생성중 오류가 발생했습니다.");
         }
 
         // 발급된 JWT 암호화
         byte[] cryptedUserJwt = CipherUtil.encrypt(CipherUtil.AES_CBC_PKCS5, rawUserJwt.getBytes(), USER_JWT_AES_KEY);
         if (cryptedUserJwt == null) {
             logger.error("'cryptedUserJwt' is null!");
-            return ApiResult.make(false, "JWT암호화중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT암호화중 오류가 발생했습니다.");
         }
 
         // JWT URL인코딩 수행
@@ -735,7 +732,7 @@ public class UsersService {
 
         if (base64UserJwt == null) {
             logger.error("'base64UserJwt' is null!");
-            return ApiResult.make(false, "JWT변환중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT변환중 오류가 발생했습니다.");
         }
 
         logger.info("Issuing user jwt success! (email: " + email + ")");
@@ -746,7 +743,7 @@ public class UsersService {
      * <p>발급한 회원 JWT를 검증합니다.</p>
      * @param audience : 검증요청한 대상(서비스)의 식별자 (발급요청자와 일치해야 함)
      * @param userJwt : 검증할 회원 JWT
-     * @return 검증 성공시 {@link String} 'email'값과 true, 실패시 false
+     * @return 검증 성공시 {@link String} 'email,id,userName'과 true, 실패시 false
      */
     public ApiResult validateUserJwt(String audience, String userJwt) {
         // 파라미터 검사
@@ -767,7 +764,7 @@ public class UsersService {
         
         if (cryptedUserJwt == null) {
             logger.error("'cryptedUserJwt' is null!");
-            return ApiResult.make(false, "JWT변환중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT변환중 오류가 발생했습니다.");
         }
 
         // 복호화 수행
@@ -775,7 +772,7 @@ public class UsersService {
 
         if (rawUserJwt == null) {
             logger.error("'rawUserJwt' is null!");
-            return ApiResult.make(false, "JWT복호화중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT복호화중 오류가 발생했습니다.");
         }
 
         // JWT 파싱
@@ -789,52 +786,52 @@ public class UsersService {
         catch (IllegalArgumentException e) {
             // jwtStr가 null이거나 길이가 0인 경우
             logger.error("Exception! 'rawUserJwt' is null or zero length! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "userJwt값이 비었습니다.");
+            return ApiResult.make(false, null, "userJwt값이 비었습니다.");
         }
         catch (MalformedJwtException e) {
             // jwtStr가 JWT토큰 포멧이 아닌경우
             logger.error("Exception! 'rawUserJwt' type is NOT JWT! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "userJwt가 올바른 JWT포멧이 아닙니다.");
+            return ApiResult.make(false, null, "userJwt가 올바른 JWT포멧이 아닙니다.");
         }
         catch (ExpiredJwtException e){
             // 토큰 유효기간이 만료된 경우
             logger.error("Exception! JWT is EXPIRED! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "토큰이 만료되었습니다. 다시 로그인 하십시오.");
+            return ApiResult.make(false, null, "토큰이 만료되었습니다. 다시 로그인 하십시오.");
         }
         catch (SignatureException e) {
             // 서명검사 오류가 발생한 경우
             logger.error("Exception! JWT is SIGN UNVALID! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "userJwt의 서명이 올바르지 않습니다.");
+            return ApiResult.make(false, null, "userJwt의 서명이 올바르지 않습니다.");
         }
         catch (MissingClaimException e) {
             // jwtRequried의 key값이 Claims에 존재하지 않는 경우
             logger.error("Exception! JWT requried claim NOT exist! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "userJwt 바디에 필요한 필수값이 비었습니다.");
+            return ApiResult.make(false, null, "userJwt 바디에 필요한 필수값이 비었습니다.");
         }
         catch (IncorrectClaimException e) {
             // jwtRequried의 key값에 해당하는 value가 불일치
             logger.error("Exception! JWT requried claim NOT matched! (rawUserJwt: " + rawUserJwt + ")");
-            return ApiResult.make(false, "userJwt 바디에 필요한 필수값 데이터가 올바르지 않습니다.");
+            return ApiResult.make(false, null, "userJwt 바디에 필요한 필수값 데이터가 올바르지 않습니다.");
         }
         catch (Exception e) {
             logger.error("Exception while parsing JWT!", e);
-            return ApiResult.make(false, "JWT파싱중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT파싱중 오류가 발생했습니다.");
         }
 
         if (userJwtMap == null) {
             logger.error("'userJwtMap' is null!");
-            return ApiResult.make(false, "JWT파싱중 오류가 발생했습니다.");
+            return ApiResult.make(false, null, "JWT파싱중 오류가 발생했습니다.");
         }
 
         // Jwt발급자와 검증자 서비스명 비교
         String originIssure = (String) userJwtMap.get("aud");
         if (originIssure == null) {
             logger.error("'originIssure' is null!");
-            return ApiResult.make(false, "JWT에 발급자가 포함되어있지 않습니다.");
+            return ApiResult.make(false, null, "JWT에 발급자가 포함되어있지 않습니다.");
         }
         else if (!originIssure.equals(audience)) {
             logger.error("'originIssure' NOT equals 'audience'! (originIssure:" + originIssure + " != audience: " + audience);
-            return ApiResult.make(false, "JWT를 발급한 서비스와 검증하려는 서비스가 일치하지 않습니다.");
+            return ApiResult.make(false, null, "JWT를 발급한 서비스와 검증하려는 서비스가 일치하지 않습니다.");
         }
 
         // 회원정보 획득
@@ -843,8 +840,12 @@ public class UsersService {
 
         if (selectUserRst == null || !selectUserRst.getResult()) {
             logger.error("Fail to find user! (email:" + email + ")");
-            return ApiResult.make(false, "회원 정보를 찾을 수 없습니다.");
+            return ApiResult.make(false, null, "회원 정보를 찾을 수 없습니다.");
         }
+
+        Users selectedUser = (Users) selectUserRst.getData("selectedUser");
+        String id = String.valueOf(selectedUser.getId());
+        String fullName = selectedUser.getFullName();
 
         // 회원 서비스 접근허용 검사
         Users validatedUser = (Users) selectUserRst.getData("selectedUser");
@@ -856,7 +857,8 @@ public class UsersService {
         }
 
         // 검증 성공
-        logger.info("'UserJwt '" + userJwt + "' for '" + audience + "' is VALIDATED! (email:" + email + ")");
-        return ApiResult.make(true, MapUtil.toMap("email", email));
+        logger.info("'UserJwt '" + userJwt + "' for '" + audience + "' is VALIDATED! (id:" + id +
+                    ", email:" + email + ", fullName: " + fullName + ")");
+        return ApiResult.make(true, MapUtil.toMap("id", id, "email", email, "fullName", fullName));
     }
 }
