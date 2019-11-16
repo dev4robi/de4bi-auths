@@ -33,7 +33,7 @@
         <button id="popup">팝업</button>
     </div>
     <div>
-        <iframe src="http://localhost:50000/main?afterIssueParam=iframe" width="50%"></iframe>
+        <iframe src="http://localhost:40000/main?afterIssueParam=iframe" width="50%"></iframe>
     </div>
     <div>
         <p>토큰 : <span id="userJwt">?</span>
@@ -41,7 +41,7 @@
 </body>
 <script>
     $('#popup').on('click', function(){
-        window.open("http://localhost:50000/main?afterIssueParam=popup", "팝업로그인", "menubar=no", true);
+        window.open("http://localhost:40000/main?afterIssueParam=popup", "팝업로그인", "menubar=no", true);
     });
 </script>
 </html>
