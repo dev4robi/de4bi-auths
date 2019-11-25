@@ -46,7 +46,7 @@ public class UsersService {
     private String USER_JWT_VERSION = null;
     private Key USER_JWT_SIGN_KEY = null;
     private SecretKeySpec USER_JWT_AES_KEY = null;
-    private Long USER_JWT_DEFAULT_DURATION_MS = null;
+    private Long USER_JWT_DEFAULT_DURATION_MIN = null;
     private Long USER_JWT_REQUEST_LIMIT_MS = null;
 
     @PostConstruct
@@ -81,7 +81,7 @@ public class UsersService {
         USER_JWT_AES_KEY = new SecretKeySpec(aes128KeyBytes, "AES");
 
         // USER_JWT_DEFAULT_DURATION_MS
-        USER_JWT_DEFAULT_DURATION_MS = Long.parseLong(env.getProperty("userJwt.jwtDefaultLifeMin")) * 60000L;
+        USER_JWT_DEFAULT_DURATION_MIN = Long.parseLong(env.getProperty("userJwt.jwtDefaultLifeMin"));
         
         // USER_JWT_REQUEST_LIMIT_MS
         USER_JWT_REQUEST_LIMIT_MS = Long.parseLong(env.getProperty("userJwt.issueRequestLimitMs"));
@@ -647,7 +647,7 @@ public class UsersService {
         }
         
         if (durationMin == null | durationMin == 0L) {
-            durationMin = USER_JWT_DEFAULT_DURATION_MS;
+            durationMin = USER_JWT_DEFAULT_DURATION_MIN;
         }
 
         // 회원정보 획득
@@ -705,7 +705,7 @@ public class UsersService {
         //   - setIssuedAt(String) : 'iat'
         //   - setExpiration(Date) : 'exp'
         //   - setNotBefore(Date) : 'nbf'
-        long jwtExpiredTimeMs = System.currentTimeMillis() + (durationMin * 1000L);
+        long jwtExpiredTimeMs = System.currentTimeMillis() + (durationMin * 60000L);
 
         String rawUserJwt = JwtUtil.buildJwt(MapUtil.toMap("ver", USER_JWT_VERSION),
                                              MapUtil.toMap("sub", "dev4robi-user-jwt",

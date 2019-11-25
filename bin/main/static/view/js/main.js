@@ -100,7 +100,7 @@ function login() {
     var audience = $('#input_audience').val();
     var email = $('#input_email').val();
     var password = $('#input_password').val();
-    var duration = $('input_duration').val();
+    var duration = 0;
 
     if (!audience) {
         alert('페이지에 오류가 발생했습니다.\n(audience: ' + audience + ')');
@@ -117,8 +117,13 @@ function login() {
         return;
     }
 
-    if (!duration) {
-        duration = 0; // default duration in server
+    var keepLoggedIn = $('#cb_keep_logged_in').is(':checked');
+
+    if (keepLoggedIn) {
+        duration = 15 * 1440; // 1day : 1440min
+    }
+    else {
+        duration = 60; // 1hour : 60min
     }
 
     var reqBody = {
@@ -136,8 +141,7 @@ function login() {
         // Success
         function(apiResult) {
             if (AJAX.checkResultSuccess(apiResult)) {
-                var userJwt = AJAX.getResultData(apiResult, 'userJwt');
-                var keepLoggedIn = $('#cb_keep_logged_in').is(':checked');
+                var userJwt = AJAX.getResultData(apiResult, 'userJwt');                
                 afterIssuing(userJwt, keepLoggedIn);
                 return;
             }
