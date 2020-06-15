@@ -708,7 +708,7 @@ public class UsersService {
         long jwtExpiredTimeMs = System.currentTimeMillis() + (durationMin * 60000L);
 
         String rawUserJwt = JwtUtil.buildJwt(MapUtil.toMap("ver", USER_JWT_VERSION),
-                                             MapUtil.toMap("sub", "dev4robi-user-jwt",
+                                             MapUtil.toMap("sub", "de4bi-user-jwt",
                                                            "aud", audience,
                                                            "iat", AUTHS_AUDIENCE_NAME,
                                                            "exp", new Date(jwtExpiredTimeMs),
@@ -780,7 +780,7 @@ public class UsersService {
         
         try {   
             userJwtMap = JwtUtil.parseJwt(new String(rawUserJwt), 
-                                          MapUtil.toMap("sub", "dev4robi-user-jwt"), 
+                                          MapUtil.toMap("sub", "de4bi-user-jwt"), 
                                           USER_JWT_SIGN_KEY);
         }
         catch (IllegalArgumentException e) {

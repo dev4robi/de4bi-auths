@@ -73,7 +73,7 @@ public class MainController {
          *   ex) afterIssueParam=iframe
          *       -> call parent's javascript function : $(parent.document).d4r_login_return(userJwt, keepLoggedIn);
          *  3. redirection
-         *   ex) afterIssueParam=https://www.dev4robi.net?userJwt={userJwt}&keepLoggedIn={true|false}
+         *   ex) afterIssueParam=https://www.de4bi.net?userJwt={userJwt}&keepLoggedIn={true|false}
          **/
         modelMap.put("afterIssueParam", afterIssueParam);
         modelMap.put("clientSalt", env.getProperty("users.password.clientSalt"));
